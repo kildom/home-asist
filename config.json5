@@ -1,0 +1,39 @@
+{
+    language: "pl-PL",
+    recognition: {
+            model: "latest_long",
+            enableSpokenPunctuation: { value: true },
+    },
+    synthesis: {
+        chat: {
+            voice: {
+                ssmlGender: 'FEMALE',
+            },
+            coding: {
+            },
+        },
+        system: {
+            voice: {
+                ssmlGender: 'MALE',
+            },
+            coding: {
+                speakingRate: 1.4,
+            },
+        },
+    },
+    recorder: {
+        // See https://www.npmjs.com/package/node-record-lpcm16#options
+        recorder: 'sox'
+    },
+    directories: {
+        cache: 'data/cache',
+    },
+    google: {
+        projectId: '302702647459',
+        projectName: 'aitests-451123',
+        keyFilename: 'drafts/google-api-key.json',
+    },
+    player: {
+        player: 'mplayer',
+    }
+}

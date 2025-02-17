@@ -1,0 +1,21 @@
+    1  mkdir speech-to-text-nodejs && touch speech-to-text-nodejs/app.js
+    2  cd speech-to-text-nodejs; cloudshell open-workspace .
+    3  gcloud iam service-accounts create speech-to-text-quickstart --project aitests-451123
+    4  gcloud projects add-iam-policy-binding aitests-451123 --member serviceAccount:speech-to-text-quickstart@aitests-451123.iam.gserviceaccount.com --role roles/speech.editor
+    5  gcloud iam service-accounts keys create speech-to-text-key.json --iam-account speech-to-text-quickstart@aitests-451123.iam.gserviceaccount.com
+    6  export GOOGLE_APPLICATION_CREDENTIALS=speech-to-text-key.json
+    7  gcloud beta services identity create --service=speech.googleapis.com --project=aitests-451123
+    8  project_number=$(gcloud projects list --filter=aitests-451123 --format="value(PROJECT_NUMBER)")
+    9  gcloud projects add-iam-policy-binding aitests-451123 --member serviceAccount:service-${project_number?}@gcp-sa-speech.iam.gserviceaccount.com --role roles/speech.serviceAgent
+   10  cloudshell open app.js
+   11  npm install --save @google-cloud/speech
+   12  node app.js
+   13  node app.cjs
+   14  npm install --save @google-cloud/text-to-speech
+   15  node app.cjs
+   16  gcloud auth application-default set-quota-project aitests-451123
+   17  export GOOGLE_APPLICATION_CREDENTIALS=speech-to-text-key.json
+   18  node app.cjs
+   19  export GOOGLE_APPLICATION_CREDENTIALS=speech-to-text-key.json
+   20  node app.cjs
+   21  history > cmds.txt
