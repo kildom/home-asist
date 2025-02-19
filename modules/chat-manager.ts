@@ -1,24 +1,19 @@
-import { ChatCompletionMessageToolCall } from "openai/resources/index.mjs";
 import { Chat } from "../chat";
-import { Instance } from "../instance";
 import { AssistantModule, AssistantModuleQueryItems, AssistantToolCallResult } from "../module";
 import { chatTime } from "../common";
 import * as config from "../config";
 import { TextSoundItem } from "../text-to-speech";
+import OpenAI from "openai";
 
 
-export class ChatManager implements AssistantModule {
+export class ChatManager extends AssistantModule {
 
-    public name = 'Chat Manager';
 
-    constructor(
-        public instance: Instance
-    ) { }
-
-    onRegister(chat: Chat): void {
+    constructor(chat: Chat) {
+        super(chat, 'Chat Manager');
     }
 
-    onQuery(chat: Chat): AssistantModuleQueryItems {
+    public onQuery(): undefined | AssistantModuleQueryItems | Promise<undefined | AssistantModuleQueryItems> {
         let items: AssistantModuleQueryItems = {
             tools: [{
                 type: 'function',
@@ -39,18 +34,11 @@ export class ChatManager implements AssistantModule {
         return items;
     }
 
-    onToolCall(chat: Chat, toolCall: ChatCompletionMessageToolCall): AssistantToolCallResult {
+    public onToolCall(toolCall: OpenAI.Chat.Completions.ChatCompletionMessageToolCall): AssistantToolCallResult | Promise<AssistantToolCallResult> {
         if (toolCall.type === 'function' && toolCall.function.name === 'end_conversation') {
-            chat.instance.player.play(new TextSoundItem('Asystent zakończył rozmowę.', false, true));
-            chat.terminate = true;
+            this.chat.terminate = true;
         }
-        return undefined;
-    }
-
-    onSerialize(chat: Chat): void {
-    }
-
-    onDeserialize(chat: Chat): void {
+        return true;
     }
 
 }

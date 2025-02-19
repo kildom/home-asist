@@ -48,7 +48,7 @@ export interface TaggedMessage {
 }
 
 export class Chat {
-
+    
     messages: (OpenAI.Chat.Completions.ChatCompletionMessageParam | TaggedMessage)[] = [];
     tools: { [key: string]: ChatTool } = {};
     modules: { [key: string]: AssistantModule } = {};
@@ -56,10 +56,17 @@ export class Chat {
     initialMessage: OpenAI.Chat.Completions.ChatCompletionDeveloperMessageParam = { role: 'developer', content: '' };
     newMessages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
     terminate: boolean = false;
+    firstQuery: boolean = true;
 
-    registerModule(assistantModule: AssistantModule) {
-        this.modules[assistantModule.name] = assistantModule;
-        assistantModule.onRegister(this);
+
+    public addModule(module: AssistantModule) {
+        this.modules[module.name] = module;
+    }
+
+    async start(): Promise<void> {
+        for (let module of Object.values(this.modules)) {
+            await module.onRegister();
+        }
     }
 
     getModuleStorage<T>(module: AssistantModule): T {
@@ -97,6 +104,13 @@ export class Chat {
 
         let openai = createOpenAI();
 
+        if (this.firstQuery) {
+            for (let module of Object.values(this.modules)) {
+                await module.onBeforeFirstQuery();
+            }
+            this.firstQuery = false;
+        }
+
         this.tools = {};
         let initialInstructions: string[][] = [];
 
@@ -110,8 +124,8 @@ export class Chat {
         }
 
         for (let module of Object.values(this.modules)) {
-            let items = module.onQuery(this);
-            if (items.initialMessages) {
+            let items = await module.onQuery();
+            if (items && items.initialMessages) {
                 for (let item of items.initialMessages) {
                     let { priority, message } = item;
                     if (!initialInstructions[priority]) {
@@ -120,7 +134,7 @@ export class Chat {
                     initialInstructions[priority].push(message);
                 }
             }
-            if (items.tools) {
+            if (items && items.tools) {
                 for (let tool of items.tools) {
                     this.tools[tool.function.name] = { tool, module };
                 }
@@ -135,7 +149,7 @@ export class Chat {
 
         let t = Date.now();
 
-        /*console.log(JSON.stringify({
+        console.log('================ QUERY:', JSON.stringify({
             model: 'gpt-4o',
             store: false,
             ...(config.file.chatGPT?.options as any),
@@ -147,7 +161,7 @@ export class Chat {
             tools: [
                 ...Object.values(this.tools).map(x => x.tool)
             ],
-        }, null, 2));*/
+        }, null, 2));
 
         let response = await openai.chat.completions.create({
             model: 'gpt-4o',
@@ -168,10 +182,11 @@ export class Chat {
     }
 
     public async process(result: OpenAI.Chat.Completions.ChatCompletion.Choice): Promise<boolean> {
+        console.log('================ PROCESSING:', result.message);
         let again = false;
         let messageSound: TextSoundItem | undefined = undefined;
         if (result.message.content) {
-            messageSound = new TextSoundItem(result.message.content, false, false);
+            messageSound = new TextSoundItem(result.message.content, false);
         }
         this.messages.push(...this.newMessages);
         this.messages.push(result.message);
@@ -179,13 +194,12 @@ export class Chat {
             if (call.type !== 'function') continue;
             let { id, 'function': func } = call;
             if (!this.tools[func.name]) {
-                this.instance.player.play(new TextSoundItem(
-                    `<speak>Asystent IA wywołał nieznaną funkcję systemową: <lang xml:lang="en-US">${func.name.substring(0, 30)}</lang></speak>`,
-                    true, true));
+                this.instance.player.say(
+                    `<speak>Asystent IA wywołał nieznaną funkcję systemową: <lang xml:lang="en-US">${func.name.substring(0, 30)}</lang></speak>`);
                 continue;
             }
             let tool = this.tools[func.name];
-            let res = tool.module.onToolCall(this, call);
+            let res = await tool.module.onToolCall(call);
             if (typeof res === 'string') {
                 this.messages.push({
                     role: 'tool',
@@ -196,8 +210,12 @@ export class Chat {
             } else if (Array.isArray(res)) {
                 this.messages.push(...res);
                 again = true;
-            } else if (res) {
-                this.messages.push(res);
+            } else {
+                this.messages.push({
+                    role: 'tool',
+                    tool_call_id: id,
+                    content: res ? "OK" : "Wystąpił nieznany błąd.",
+                });
                 again = true;
             }
         }

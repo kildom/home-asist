@@ -166,7 +166,8 @@ export class TextSoundItem implements SoundItem {
     public resolve: any | undefined = undefined;
     public reject: any | undefined = undefined;
 
-    public constructor(public text: string, public ssml: boolean, public system: boolean) {
+    public constructor(public text: string, public system: boolean = true) {
+        let ssml = text.startsWith('<speak>');
         textSoundFile(text, ssml, system)
             .then((fileName) => {
                 this.fileName = fileName;

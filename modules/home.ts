@@ -1,10 +1,10 @@
-import { ChatCompletionMessageToolCall } from "openai/resources/index.mjs";
 import { Chat } from "../chat";
 import { Instance } from "../instance";
 import { AssistantModule, AssistantModuleQueryItems, AssistantToolCallResult } from "../module";
 import { chatTime } from "../common";
 import * as config from "../config";
 import { TextSoundItem } from "../text-to-speech";
+import OpenAI from "openai";
 
 const sensors = `
 Wskazania czujników temperatury i wilgotności:
@@ -27,29 +27,26 @@ Wskazania czujników temperatury i wilgotności:
 - C.W.U (ciepła woda użytkowa, woda w kranie): 56°C
 `;
 
-function sw(state: number, name: string) {
-    return { state, name };
-}
-
 let lights: { [key: string]: number } = {
     'Pole przed domem': 0,
     'Pole w ogrodzie': 0,
     'Pole przed garażem': 0,
     'Pole za garażem': 0,
+    'Pole - taras': 0,
     'Wiatrołap': 1,
     'Kuchnia': 0,
     'Bar': 1,
     'Jadalnia': 1,
     'Korytarz na dole': 0,
     'Korytarz na górze': 0,
-    'Salon - światła jasne': 1,
-    'Salon - światła normalne': 0,
-    'Salon - światła ciepłe': 1,
+    'Salon - światło jasne': 1,
+    'Salon - światło normalne': 0,
+    'Salon - światło słabe': 1,
     'Łazienka na dole': 0,
     'Łazienka na górze': 0,
-    'Schody na dole': 1,
-    'Sypialnia rodziców - światła jasne': 1,
-    'Sypialnia rodziców - światła ciemne': 1,
+    'Schody': 1,
+    'Sypialnia rodziców - światło jasne': 1,
+    'Sypialnia rodziców - światło słabe': 1,
     'Pokój Tereski (Teresy)': 1,
     'Pokój Uli (Urszuli)': 1,
     'Pokój Basi (Barbary)': 1,
@@ -57,24 +54,32 @@ let lights: { [key: string]: number } = {
 };
 
 interface HomeStorage {
-    showLightsStatus?: boolean;
+    expandTools?: boolean;
 }
 
-export class Home implements AssistantModule {
+export class Home extends AssistantModule {
 
-    public name = 'Home';
-
-    constructor(
-        public instance: Instance
-    ) { }
-
-    onRegister(chat: Chat): void {
+    constructor(chat: Chat) {
+        super(chat, 'Home');
     }
 
-    onQuery(chat: Chat): AssistantModuleQueryItems {
-        let storage = chat.getModuleStorage<HomeStorage>(this);
+    public onQuery(): undefined | AssistantModuleQueryItems | Promise<undefined | AssistantModuleQueryItems> {
+        let storage = this.chat.getModuleStorage<HomeStorage>(this);
         let items: AssistantModuleQueryItems = {
-            tools: [{
+            tools: [],
+        }
+        if (storage.expandTools) {
+            this.chat.removeTaggedMessages('home.lights');
+            this.chat.messages.push({
+                role: 'taggedMessage',
+                tag: 'home.lights',
+                message: {
+                    role: 'developer',
+                    content: 'Aktualny stan oświetlenia:\n' + Object.entries(lights)
+                        .map(([name, value]) => `- ${name}: ${value ? 'on' : 'off'}`).join('\n'),
+                },
+            });
+            items.tools!.push({
                 type: 'function',
                 function: {
                     name: 'toggle_light',
@@ -103,31 +108,29 @@ export class Home implements AssistantModule {
                     },
                     strict: true
                 }
-            }],
-            initialMessages: [
-                { priority: 25, message: sensors },
-            ]
-        }
-        //if (storage.showLightsStatus) {
-            chat.removeTaggedMessages('home.lights');
-            chat.messages.push({
-                role: 'taggedMessage',
-                tag: 'home.lights',
-                message: {
-                    role: 'developer',
-                    content: 'Aktualny stan oświetlenia:\n' + Object.entries(lights)
-                        .map(([name, value]) => `- ${name}: ${value ? 'on' : 'off'}`).join('\n'),
-                },
             });
-        //}
+            items.initialMessages = [
+                { priority: 25, message: sensors},
+                { priority: 26, message: 'Jeżeli użytkownik nie powiedział o które światło mu chodzi, użyj wszystkie światła w pomieszczeniu, gdzie się on znajduje.' },
+            ];
+        } else {
+            items.tools!.push({
+                type: 'function',
+                function: {
+                    name: 'list_lights_and_sensors',
+                    description: 'Funkcja wypisuje nazwy i aktualne stany wszystkich świateł i czujników temperatury i wilgotności w domu oraz jego otoczeniu. Wywołaj ją przed przełączeniem światła.',
+                    strict: false,
+                }
+            });
+        }
         return items;
     }
 
-    onToolCall(chat: Chat, toolCall: ChatCompletionMessageToolCall): AssistantToolCallResult {
+    public onToolCall(toolCall: OpenAI.Chat.Completions.ChatCompletionMessageToolCall): AssistantToolCallResult | Promise<AssistantToolCallResult> {
         let errors = '';
-        let storage = chat.getModuleStorage<HomeStorage>(this);
+        let storage = this.chat.getModuleStorage<HomeStorage>(this);
         if (toolCall.type === 'function' && toolCall.function.name === 'toggle_light') {
-            storage.showLightsStatus = true;
+            storage.expandTools = true;
             let args: {
                 rooms?: string[],
                 turn_on?: boolean,
@@ -142,12 +145,13 @@ export class Home implements AssistantModule {
                     errors += 'Nie podano czy zaświecić czy zgasić, ';
                     throw new Error('</lang>Nie podano co zrobić<lang xml:lang="en-US">');
                 }
+                console.log(args.turn_on, args.rooms.join(', '));
                 let info = args.turn_on ? 'zapalono światła w: ' : 'zgaszono światła w:';
                 for (let room of args.rooms) {
-                    room = room.toLowerCase().trim().replace(/[a-z]/g, '');
+                    room = room.toLowerCase().trim().replace(/[^a-z]/g, '');
                     let any = false;
                     for (let [key, value] of Object.entries(lights)) {
-                        if (key.toLowerCase().replace(/[a-z]/g, '').includes(room)) {
+                        if (key.toLowerCase().replace(/[^a-z]/g, '').includes(room)) {
                             lights[key] = args.turn_on ? 1 : 0;
                             info += ` ${key},`;
                         }
@@ -157,22 +161,20 @@ export class Home implements AssistantModule {
                         errors += `nieznany pokój: ${room}, `;
                     }
                 }
-                chat.instance.player.play(new TextSoundItem(info, false, true));
+                this.chat.instance.player.say(info);
             } catch (err) {
-                this.instance.player.play(new TextSoundItem(
+                this.instance.player.say(
                     `<speak>Asystent IA podał nieprawidłowe dane do przełączenia światła:
-                    <lang xml:lang="en-US">${err?.message}</lang></speak>`,
-                    true, true));
+                    <lang xml:lang="en-US">${err?.message}</lang></speak>`);
             }
             console.log(JSON.stringify(lights, null, 2));
         }
+        else if (toolCall.type === 'function' && toolCall.function.name === 'list_lights_and_sensors') {
+            storage.expandTools = true;
+            this.instance.player.say('Sprawdzanie świateł i czujników.');
+            return 'Aktualny stan oświetlenia:\n' + Object.entries(lights)
+                .map(([name, value]) => `- ${name}: ${value ? 'on' : 'off'}`).join('\n') + '\n' + sensors;
+        }
         return errors ? 'Błąd: ' + errors : 'OK';
     }
-
-    onSerialize(chat: Chat): void {
-    }
-
-    onDeserialize(chat: Chat): void {
-    }
-
 }

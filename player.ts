@@ -2,6 +2,7 @@ import { Instance } from "./instance";
 import createPlayer from 'play-sound';
 import * as child_process from 'node:child_process';
 import * as config from './config';
+import { TextSoundItem } from "./text-to-speech";
 
 export interface SoundItem {
     getFile(): Promise<string> | string | undefined;
@@ -30,6 +31,10 @@ export class SoundPlayer {
 
     public constructor(instance: Instance) {
     };
+
+    public say(text: string, system: boolean = true): void {
+        this.play(new TextSoundItem(text, system));
+    }
 
     public play(sound: SoundItem | string | undefined): void {
         if (typeof sound === 'undefined') {

@@ -4,6 +4,7 @@ import * as JSON5 from 'json5';
 import { protos as speechProtos } from '@google-cloud/speech';
 import { protos as texttospeechProtos } from '@google-cloud/text-to-speech';
 import OpenAI from 'openai';
+import { customsearch_v1 } from 'googleapis';
 
 export interface SynthesisOptions {
     voice?: texttospeechProtos.google.cloud.texttospeech.v1.IVoiceSelectionParams;
@@ -38,6 +39,7 @@ export interface ConfigFile {
         options?: OpenAI.ChatCompletionCreateParamsNonStreaming;
         initialMessages?: string[];
     };
+    googleSearch?: customsearch_v1.Params$Resource$Cse$List;
 }
 
 export const sampleRate = 16000;

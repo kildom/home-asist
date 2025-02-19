@@ -7,6 +7,7 @@ import OpenAI from "openai";
 import { ChatManager } from "./modules/chat-manager";
 import { TextSoundItem } from "./text-to-speech";
 import { Home } from "./modules/home";
+import { Web } from "./modules/web";
 
 function endOfMessageTimeout(userMessage: string) {
     console.log('Speech timeout', userMessage === ''
@@ -106,10 +107,11 @@ async function executeOneRound(instance: Instance, chat: Chat, previousAudio?: I
     do {
         loopCounter++;
         if (loopCounter > 10) {
-            instance.player.play(new TextSoundItem('Błąd rozmowy. Za dużo rządań do systemu od asystenta IA.', false, true));
+            instance.player.say('Błąd rozmowy. Za dużo rządań do systemu od asystenta IA.');
             break;
         }
         queryAgain = await chat.process(assistantResult);
+        queryAgain = queryAgain;
         if (queryAgain) {
             assistantResult = await chat.query();
         }
@@ -125,11 +127,11 @@ async function executeOneRound(instance: Instance, chat: Chat, previousAudio?: I
 async function main() {
     let instance = new Instance();
     let chat = new Chat(instance);
-    let managerModule = new ChatManager(instance);
-    let home = new Home(instance);
-    chat.registerModule(managerModule);
-    chat.registerModule(home);
+    let managerModule = new ChatManager(chat);
+    let home = new Home(chat);
+    let web = new Web(chat);
     instance.start();
+    await chat.start();
     let continueConversation = true;
     while (continueConversation) {
         console.log('=============================================================\nStarting new round');

@@ -33,3 +33,4 @@ Jeżeli zmianiasz język, wypisz kod języka w nawiasach, np. (en) This is Engli
    - Jeżeli użytkownik nie potwierdził imienia, to asystent powinien zapytać o nie przed kontynuowaniem.
    - jeżeli dalej nie działa, wyślij powiadomienie na telefon. Asystent wróci do tej sprawy, kiedy użytkownik rozpocznie nową rozmowę.
  - Jeżeli imie użytkownika po "tu" nie jest znane, pyta czy to jest gość, jeżeli tak, to pyta czy utworzyć konto gościa i czy ma być tymczasowe.
+ - Search Google in JSON: https://developers.google.com/custom-search/v1/overview
