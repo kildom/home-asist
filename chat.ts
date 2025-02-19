@@ -186,7 +186,7 @@ export class Chat {
         let again = false;
         let messageSound: TextSoundItem | undefined = undefined;
         if (result.message.content) {
-            messageSound = new TextSoundItem(result.message.content, false);
+            messageSound = new TextSoundItem(addLanguages(result.message.content), false);
         }
         this.messages.push(...this.newMessages);
         this.messages.push(result.message);
@@ -224,3 +224,111 @@ export class Chat {
     }
 
 }
+
+
+function escape(unsafe: string) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+const languages = {
+  af: 'af-ZA',
+  ar: 'ar-XA',
+  bg: 'bg-BG',
+  bn: 'bn-IN',
+  ca: 'ca-ES',
+  cmn: 'cmn-CN',
+  //cmn: 'cmn-TW',
+  cs: 'cs-CZ',
+  da: 'da-DK',
+  de: 'de-DE',
+  el: 'el-GR',
+  //en: 'en-AU',
+  //en: 'en-GB',
+  //en: 'en-IN',
+  en: 'en-US',
+  es: 'es-ES',
+  //es: 'es-US',
+  eu: 'eu-ES',
+  fi: 'fi-FI',
+  fil: 'fil-PH',
+  //fr: 'fr-CA',
+  fr: 'fr-FR',
+  gl: 'gl-ES',
+  gu: 'gu-IN',
+  he: 'he-IL',
+  hi: 'hi-IN',
+  hu: 'hu-HU',
+  id: 'id-ID',
+  is: 'is-IS',
+  it: 'it-IT',
+  ja: 'ja-JP',
+  kn: 'kn-IN',
+  ko: 'ko-KR',
+  lt: 'lt-LT',
+  lv: 'lv-LV',
+  ml: 'ml-IN',
+  mr: 'mr-IN',
+  ms: 'ms-MY',
+  nb: 'nb-NO',
+  //nl: 'nl-BE',
+  nl: 'nl-NL',
+  pa: 'pa-IN',
+  pl: 'pl-PL',
+  //pt: 'pt-BR',
+  pt: 'pt-PT',
+  ro: 'ro-RO',
+  ru: 'ru-RU',
+  sk: 'sk-SK',
+  sr: 'sr-RS',
+  sv: 'sv-SE',
+  ta: 'ta-IN',
+  te: 'te-IN',
+  th: 'th-TH',
+  tr: 'tr-TR',
+  uk: 'uk-UA',
+  vi: 'vi-VN',
+  yue: 'yue-HK',
+}
+
+
+function getSSMLLanguage(lang: string): string {
+    return languages[lang.trim().toLowerCase()] ?? lang.trim().toLowerCase();
+}
+
+function addLanguages(text: string): string {
+    let parts = text.split(/(\([a-z][a-z]\))/);
+    if (parts.length === 1) {
+        return text;
+    }
+    let result = '<speak>';
+    let defaultLang = getSSMLLanguage(config.file.language);
+    let lang = defaultLang;
+    for (let i = 0; i < parts.length; i++) {
+        if (i % 2 === 0) {
+            result += escape(parts[i]);
+        } else {
+            let oldLang = lang;
+            lang = getSSMLLanguage(parts[i].substring(1, 3));
+            if (lang === oldLang) {
+                // Nothing to do
+            } else if (lang === defaultLang) {
+                result += '</voice>';
+            } else if (oldLang === defaultLang) {
+                result += `<voice gender="female" language="${lang}">`; // female/male z konfiguracji
+            } else {
+                result += '</voice>';
+                result += `<voice gender="female" language="${lang}">`;
+            }
+        }
+    }
+    if (lang !== defaultLang) {
+        result += '</voice>';
+    }
+    result += '</speak>';
+    console.log(result);
+    return result;
+}
+
