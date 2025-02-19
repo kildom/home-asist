@@ -1,8 +1,12 @@
 {
     language: "pl-PL",
     recognition: {
+        config: {
             model: "latest_long",
             enableSpokenPunctuation: { value: true },
+        },
+        noMessageTimeout: 10000,
+        endOfMessageTimeout: 1000,
     },
     synthesis: {
         chat: {
@@ -35,5 +39,18 @@
     },
     player: {
         player: 'mplayer',
-    }
+    },
+    chatGPT: {
+        options: {
+            model: "gpt-4o",
+        },
+        initialMessages: [
+            'Pełnij funkcję inteligentego domu o imieniu Zefira. Używaj formy damskiej dla swoich wypowiedzi.',
+            '',
+            'Nie kończ towjej odpowiedzi pytaniem lub informacją, że jesteś gotowy do pomocy.',
+            'Udzielaj odpowiedzi tak, jakbyś mówiła, a nie pisała. Liczby i wzory matematyczne zapisuj słownie.',
+            'Wiadomości od użytkownika pochodzą z systemu rozpoznawania mowy. Mogą zawierać błędy interpunkcyjne.',
+            'Mogą zawieraz znaki interpunkcyjne zapisane słownie.',
+        ]
+    },
 }

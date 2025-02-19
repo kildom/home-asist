@@ -4,6 +4,7 @@
     "@google-cloud/text-to-speech": "^5.8.0",
     "json5": "^2.2.3",
     "node-record-lpcm16": "^1.0.1",
+    "openai": "^4.85.1",
     "play-sound": "^1.1.6"
   },
   "devDependencies": {
