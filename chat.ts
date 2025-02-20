@@ -5,6 +5,7 @@ import { Instance } from "./instance";
 import { ChatManager } from "./modules/chat-manager";
 import { AssistantModule } from "./module";
 import { TextSoundItem } from './text-to-speech';
+import { createDebugID, dumpData } from './common';
 
 
 const envKey = 'OPENAI_API_KEY_FILE';
@@ -48,7 +49,9 @@ export interface TaggedMessage {
 }
 
 export class Chat {
-    
+
+    uuid = createDebugID(true);
+    counter: number = 0;
     messages: (OpenAI.Chat.Completions.ChatCompletionMessageParam | TaggedMessage)[] = [];
     tools: { [key: string]: ChatTool } = {};
     modules: { [key: string]: AssistantModule } = {};
@@ -149,7 +152,7 @@ export class Chat {
 
         let t = Date.now();
 
-        console.log('================ QUERY:', JSON.stringify({
+        let body: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
             model: 'gpt-4o',
             store: false,
             ...(config.file.chatGPT?.options as any),
@@ -161,22 +164,16 @@ export class Chat {
             tools: [
                 ...Object.values(this.tools).map(x => x.tool)
             ],
-        }, null, 2));
+        };
 
-        let response = await openai.chat.completions.create({
-            model: 'gpt-4o',
-            store: false,
-            ...(config.file.chatGPT?.options as any),
-            messages: [
-                this.initialMessage,
-                ...this.messages.map(x => x.role === 'taggedMessage' ? x.message : x),
-                ...this.newMessages,
-            ],
-            tools: [
-                ...Object.values(this.tools).map(x => x.tool)
-            ],
-        });
+        let queryID = (this.counter++).toString().padStart(4, '0');
+
+        dumpData(body, 'chat', this.uuid, this.instance.uuid, queryID);
+
+        let response = await openai.chat.completions.create(body);
         console.log(Date.now() - t, 'ms');
+
+        dumpData(response, 'chat', this.uuid, this.instance.uuid, queryID, 'res');
 
         return response.choices[0];
     }
@@ -221,6 +218,19 @@ export class Chat {
         }
         this.instance.player.play(messageSound);
         return again;
+    }
+
+    public sideQuery(body: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+        let openai = createOpenAI();
+        let queryID = (this.counter++).toString().padStart(4, '0');
+        dumpData(body, 'chat', this.uuid, this.instance.uuid, queryID, 'side');
+        return openai.chat.completions.create({
+            store: false,
+            ...body,
+        }).then(response => {
+            dumpData(response, 'chat', this.uuid, this.instance.uuid, queryID, 'side-res');
+            return response;
+        });
     }
 
 }

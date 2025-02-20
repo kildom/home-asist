@@ -1,4 +1,6 @@
 
+import * as fs from 'node:fs';
+
 
 export function ignoreErrors(func: (...args: any) => any) {
     try {
@@ -103,4 +105,24 @@ export function chatTime(date: Date) {
     let seconds = date.getSeconds().toString().padStart(2, '0');
     let dayOfWeek = daysOfWeek[date.getDay()];
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}, ${dayOfWeek}`;
+}
+
+export function createDebugID(withDate: boolean): string {
+    let result = '';
+    if (withDate) {
+        let date = new Date();
+        let year = date.getFullYear();
+        let month = (date.getMonth() + 1).toString().padStart(2, '0');
+        let day = date.getDay().toString().padStart(2, '0');
+        let hours = date.getHours().toString().padStart(2, '0');
+        let minutes = date.getMinutes().toString().padStart(2, '0');
+        let seconds = date.getSeconds().toString().padStart(2, '0');
+        result = `${year}${month}${day}T${hours}${minutes}${seconds}-`;
+    }
+    return result + Math.random().toString(36).toUpperCase().substring(2, 8) + Math.random().toString(36).toUpperCase().substring(2, 8);
+}
+
+export function dumpData(data: any, ...ids: string[]) {
+    let file = '_debug/' + ids.join('-') + '.json';
+    fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }

@@ -3,6 +3,7 @@ import { Recorder } from "./recorder";
 import { create as createRecorder } from "./recorder-node";
 import * as config from "./config";
 import { SoundPlayer } from "./player";
+import { createDebugID } from "./common";
 
 export class Instance extends EventEmitter<{
     audio: [data: Int16Array];
@@ -11,6 +12,7 @@ export class Instance extends EventEmitter<{
     private recorder: Recorder;
     private recorderRetryCounter: number = 0;
     public player = new SoundPlayer(this);
+    public uuid = createDebugID(false);
 
     public constructor() {
         super();

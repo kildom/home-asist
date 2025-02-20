@@ -2,13 +2,17 @@
   "dependencies": {
     "@google-cloud/speech": "^6.7.0",
     "@google-cloud/text-to-speech": "^5.8.0",
+    "axios": "^1.7.9",
     "googleapis": "^144.0.0",
+    "jsdom": "^26.0.0",
     "json5": "^2.2.3",
     "node-record-lpcm16": "^1.0.1",
     "openai": "^4.85.1",
-    "play-sound": "^1.1.6"
+    "play-sound": "^1.1.6",
+    "tiktoken": "^1.0.20"
   },
   "devDependencies": {
+    "@types/jsdom": "^21.1.7",
     "@types/node": "^22.13.4",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"

@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { Chat } from "./chat";
+import { Chat, TaggedMessage } from "./chat";
 import { Instance } from "./instance";
 
 
@@ -12,7 +12,7 @@ export type AssistantToolCallResult =
     | boolean
     | string
     | OpenAI.Chat.Completions.ChatCompletionToolMessageParam
-    | OpenAI.Chat.Completions.ChatCompletionMessageParam[];
+    | (OpenAI.Chat.Completions.ChatCompletionMessageParam | TaggedMessage)[];
 
 export class AssistantModule {
 
