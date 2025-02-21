@@ -1,6 +1,7 @@
 google-api-key.json
 google-search-key.txt
 open-ai-key.txt
+callmebot-api-key.json
 node_modules
 /data/cache/
 /_*

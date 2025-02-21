@@ -8,6 +8,7 @@ import { ChatManager } from "./modules/chat-manager";
 import { TextSoundItem } from "./text-to-speech";
 import { Home } from "./modules/home";
 import { Web } from "./modules/web";
+import { Phone } from "./modules/phone";
 
 function endOfMessageTimeout(userMessage: string) {
     console.log('Speech timeout', userMessage === ''
@@ -130,6 +131,7 @@ async function main() {
     let managerModule = new ChatManager(chat);
     let home = new Home(chat);
     let web = new Web(chat);
+    let phone = new Phone(chat);
     instance.start();
     await chat.start();
     let continueConversation = true;

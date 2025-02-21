@@ -32,7 +32,7 @@ type WaitMultipleResult<T extends { [key: string]: Promise<any> }> = WaitMultipl
 export function waitMultiple<T extends { [key: string]: Promise<any> }>(promises: T, catchError: true): Promise<WaitMultipleResultWithError<T>>;
 export function waitMultiple<T extends { [key: string]: Promise<any> }>(promises: T, catchError?: false): Promise<WaitMultipleResult<T>>;
 export function waitMultiple<T extends { [key: string]: Promise<any> }>(promises: T, catchError?: boolean): any {
-        return new Promise<WaitMultipleResult<T>>((resolve, reject) => {
+    return new Promise<WaitMultipleResult<T>>((resolve, reject) => {
 
         interface WrapperType {
             key: keyof T;
@@ -108,6 +108,10 @@ export function chatTime(date: Date) {
 }
 
 export function createDebugID(withDate: boolean): string {
+    let dir = '_debug';
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
     let result = '';
     if (withDate) {
         let date = new Date();

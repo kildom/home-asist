@@ -34,3 +34,32 @@ Jeżeli zmianiasz język, wypisz kod języka w nawiasach, np. (en) This is Engli
    - jeżeli dalej nie działa, wyślij powiadomienie na telefon. Asystent wróci do tej sprawy, kiedy użytkownik rozpocznie nową rozmowę.
  - Jeżeli imie użytkownika po "tu" nie jest znane, pyta czy to jest gość, jeżeli tak, to pyta czy utworzyć konto gościa i czy ma być tymczasowe.
  - Search Google in JSON: https://developers.google.com/custom-search/v1/overview
+
+Functions to do:
+* [x] Conversation management
+  * [x] `end_conversation`
+  * [ ] `manage_conversation`
+    * [ ] `save_conversation` - save conversation with user provided name or ia provided (if user didn't specified)
+    * [ ] `restore_conversation` - restore last or any from the list
+    * [ ] `delete_conversation` - delete saved conversation (todo: onChatEnd event for module to ask if used want to delete this previously saved conversation)
+    * [ ] message: list of all saved conversations
+  * [ ] `add_user` - allows 3-site conversation (or more)
+* [x] web
+  * [x] `search_google`
+  * [ ] `search_wikipedia`
+  * [x] `fetch_page` (includes wikipedia)
+* [x] home
+  * [x] `list_lights_and_sensors`
+    * [x] `func toggle_light`
+  * [ ] message: lights and sensors state
+* [ ] phone
+  * [ ] `send_message` - high priority messages will ring
+* [ ] tasks
+  * [ ] `cancel_task`
+  * [ ] `get_scheduled_tasks`
+  * [ ] `schedule_tasks`
+* [ ] urgent issues
+  * [ ] `confirm_urgent_issue` (only if issues active)
+  * [ ] `get_urgent_issues` (only if issues active)
+  * [ ] message: awating urgent issues
+  * [ ] onChatEnd: inform about urgent issue if appeared in the middle of conversation
