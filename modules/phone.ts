@@ -20,8 +20,9 @@ const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
     {
         type: 'function',
         function: {
+            // TODO: If not configured or wrong key/phone, return instructions how to configure.
             name: 'send_message',
-            description: 'Function sends a message or URL to page to show to user\'s phone. You must give a user name, so ask first if you don\'t know yet.',
+            description: 'Funkcja wysyła wiadomość lub URL do telefonu użytkownika. Funckja wymaga nazwy użytkownika, więc zapytaj jeżeli jeszcze nie znasz.  Liczby i numery wysyłaj w formie cyfrowej, nie używaj formy słownej.',
             parameters: {
                 type: 'object',
                 required: [
@@ -31,11 +32,11 @@ const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
                 properties: {
                     message: {
                         type: 'string',
-                        description: 'The message or URL to send to the user\'s phone.'
+                        description: 'Wiadomość lub URL do wysłania.' // TODO: Inform about maximum message length or divide into more messages automatically.
                     },
                     user_name: {
                         type: 'string',
-                        description: 'User name. Owner of the phone.'
+                        description: 'Nazwa użytkownika. Właściciel telefonu.'
                     }
                 },
                 additionalProperties: false
@@ -43,6 +44,7 @@ const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
             strict: true
         }
     },
+    // TODO: Function (or some other method) to set user phone number and api key.
 ];
 
 export class Phone extends AssistantModule {

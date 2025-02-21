@@ -141,7 +141,8 @@ export class Web extends AssistantModule {
     }
 
     private async fetchPage(toolCall: OpenAI.Chat.Completions.ChatCompletionMessageToolCall): Promise<AssistantToolCallResult> {
-        this.instance.player.say('Pobieranie strony');
+        // TODO: This function may be executed in parallel with other fetch calls. Add functionality to execute multiple tools in parallel.
+        this.instance.player.say('Pobieranie strony'); // This message should contain number of pages to fetch if multiple pages are requested in one response.
         let url: string;
         let topic: string;
         let keepLinks: boolean;
@@ -230,7 +231,7 @@ export class Web extends AssistantModule {
                 tool_call_id: toolCall.id,
                 content: markdown,
             },
-            {
+            { // TODO: If multiple pages in a single response are requested, just one developer message MUST be added.
                 role: 'developer',
                 content: 'Powyżej znajduje się streszczenie strony związane z wybranym tematem. Jeżeli chcesz później ponownie skorzystać z informacji z tej strony, nie wykożystuj powyższego streszczenia, ale wywołaj funkcję "fetch_page" z parametrem "url" ustawionym na: ' + url,
             }
