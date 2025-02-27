@@ -48,6 +48,19 @@ export interface TaggedMessage {
     message: OpenAI.Chat.Completions.ChatCompletionMessageParam;
 }
 
+/*
+When sending a query to OpenAI:
+ - Chat structure:
+   - static system messages
+   - past conversation messages
+   - dynamic system messages
+   - latest user message
+ - Tools structure:
+   - static, visible
+   - static, hidden (not send)
+   - dynamic (filtered by the visibility)
+*/
+
 export class Chat {
 
     uuid = createDebugID(true);

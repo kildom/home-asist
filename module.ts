@@ -8,6 +8,23 @@ export interface AssistantModuleQueryItems {
     tools?: OpenAI.Chat.Completions.ChatCompletionTool[];
 }
 
+export interface ModuleTool {
+    isDynamic?: boolean; // dynamic tools are put at the end allowing non-dynamic tools caching.
+    isHidden?: boolean; // hidden tools are not available for the assistant.
+    tools: OpenAI.Chat.Completions.ChatCompletionTool;
+    /* Tools buckets in chat appearance order:
+       - static, visible
+       - static, hidden
+       - dynamic, visible and hidden
+       */
+}
+
+export interface ModuleMessage {
+    isDynamic?: boolean;
+    message: string;
+}
+
+
 export type AssistantToolCallResult =
     | boolean
     | string
@@ -27,13 +44,21 @@ export class AssistantModule {
     }
 
     public onRegister(): void | Promise<void> {
+        /* Suggested chat methods to use:
+         *     this.chat.addTool(tool, isDynamic) - 
+         *     this.chat.addSystemMessage(message, priority, isDynamic) - priority is used to sort messages,
+         *         dynamic messages are put before each message query and removed after query to avoid cache
+         *         misses.
+         */
     }
 
     public onBeforeFirstQuery(): void | Promise<void> {
-        return undefined;
+        /* Suggested chat methods to use: the same as in onRegister. */
+
     }
 
     public onQuery(): undefined | AssistantModuleQueryItems | Promise<undefined | AssistantModuleQueryItems> {
+        /* Modify the chat state (messages and tools) to prepare for the next query. */
         return undefined;
     }
 

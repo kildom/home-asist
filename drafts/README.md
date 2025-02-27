@@ -43,6 +43,7 @@ Functions to do:
     * [ ] `restore_conversation` - restore last or any from the list
     * [ ] `delete_conversation` - delete saved conversation (todo: onChatEnd event for module to ask if used want to delete this previously saved conversation)
     * [ ] message: list of all saved conversations
+  * [ ] `set_model` - switch between ia models
   * [ ] `add_user` - allows 3-site conversation (or more)
 * [x] web
   * [x] `search_google`
@@ -51,9 +52,9 @@ Functions to do:
 * [x] home
   * [x] `list_lights_and_sensors`
     * [x] `func toggle_light`
-  * [ ] message: lights and sensors state
-* [ ] phone
-  * [ ] `send_message` - high priority messages will ring
+  * [x] message: lights and sensors state
+* [x] phone
+  * [x] `send_message` - TODO: high priority messages will ring
 * [ ] tasks
   * [ ] `cancel_task`
   * [ ] `get_scheduled_tasks`
@@ -63,3 +64,7 @@ Functions to do:
   * [ ] `get_urgent_issues` (only if issues active)
   * [ ] message: awating urgent issues
   * [ ] onChatEnd: inform about urgent issue if appeared in the middle of conversation
+* [ ] e-mail
+  * message: number of unread e-mails
+  * [ ] `get_unread_emails` - just sender and subject
+  * [ ] `send_email` - just create draft and return string informing that user need to send it
