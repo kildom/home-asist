@@ -68,3 +68,17 @@ Functions to do:
   * message: number of unread e-mails
   * [ ] `get_unread_emails` - just sender and subject
   * [ ] `send_email` - just create draft and return string informing that user need to send it
+
+# Wake Up Word Detection
+
+* Interesting library: https://github.com/dscripka/OpenWakeWord
+  * Shold work on Rapsberry PI 3 with ~10% CPU
+  * [Training new models](https://github.com/dscripka/OpenWakeWord?tab=readme-ov-file#training-new-models)
+  * Synthetic data generation:
+    * https://github.com/dscripka/synthetic_speech_dataset_generation
+      * This notebook has some examples: https://github.com/dscripka/openWakeWord/blob/main/notebooks/automatic_model_training.ipynb
+      * also Augmentation: room impulse responses, noise and background audio
+    * https://github.com/rhasspy/piper-sample-generator
+      * Augmentation is interesting
+    * (looks like both are based on older python and python modules, so downgrade may be needed)
+* This is even smaller library, but may not be so good: https://github.com/kahrendt/microWakeWord
