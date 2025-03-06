@@ -13,6 +13,7 @@ Jeżeli zmianiasz język, wypisz kod języka w nawiasach, np. (en) This is Engli
 ```
 
 # Notatki:
+ - Może spróbować ten projekt: https://github.com/agno-agi/agno
  - gdy rozmowa musi być zainicjowana przez asystenta:
    - robi ding i czeka, jeżeli użytkownik to usłyszy, może zapytać o co chodzi
    - jeżeli nie zadziała po pewnym czasie, mówi np. "Dominik, tu Zefira" i nadsłuchuje odpowiedzi (nie zbyt długo, nawet jeżeli jeszcze rejestruje tekst).
