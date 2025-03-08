@@ -37,6 +37,7 @@ export interface ConfigFile {
     };
     chatGPT?: {
         options?: OpenAI.ChatCompletionCreateParamsNonStreaming;
+        betterOptions?: OpenAI.ChatCompletionCreateParamsNonStreaming;
         initialMessages?: string[];
     };
     googleSearch?: customsearch_v1.Params$Resource$Cse$List;

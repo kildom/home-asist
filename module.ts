@@ -90,7 +90,7 @@ export class AssistantModule {
      ** Chat will be resumed.
      - constructor
      - onRegister
-     ** Chat is restored.
+     ** Chat is restored (only order of tools is restored each toolkit must add tools again).
      - onDeserialize
      ** User asked first question.
      - onBeforeFirstQuery... and the rest is the same as before.

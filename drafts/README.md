@@ -35,6 +35,29 @@ Jeżeli zmianiasz język, wypisz kod języka w nawiasach, np. (en) This is Engli
    - jeżeli dalej nie działa, wyślij powiadomienie na telefon. Asystent wróci do tej sprawy, kiedy użytkownik rozpocznie nową rozmowę.
  - Jeżeli imie użytkownika po "tu" nie jest znane, pyta czy to jest gość, jeżeli tak, to pyta czy utworzyć konto gościa i czy ma być tymczasowe.
  - Search Google in JSON: https://developers.google.com/custom-search/v1/overview
+ - Wymuś odpowiedzi w formacie SSML. Trzeba też sparsować SSML przed wysłaniem do Google, żeby, np. zmienić z `<lang>` na `<voice>`, usunąć nie obsługiwane znaczniki (chociaż możnaby wysłać jak jest, a jak google zwróci błąd to dopiero poprawiać).
+   ```
+    Wszystkie odpowiedzi podawaj w formacie SSML. Jeżeli zmieniasz język na inny niż polski, dodaj odpowiednie znaczniki SSML. jeżeli użytkownik poprosi, żebyś mówiła wolniej lub szybciej, dadaj odpowiednie znaczniki SSML.
+
+    Twoje odpowiedzi będą wysłuchiwane, a nie odczytywane. Odpowiadaj tak, aby łatwo dało się słuchać twoich wypowiedzi. Nie generuj zbyt długich wypowiedzi.
+    {
+      "name": "ssml_response",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "ssml": {
+            "type": "string",
+            "description": "The assistant's response formatted in SSML."
+          }
+        },
+        "required": [
+          "ssml"
+        ],
+        "additionalProperties": false
+      }
+    }
+   ```
 
 Functions to do:
 * [x] Conversation management
