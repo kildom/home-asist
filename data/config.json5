@@ -1,0 +1,42 @@
+{
+    "chatGPT": {
+        "standardOptions": {
+            //"max_completion_tokens": 30,
+            "model": "gpt-4o-mini"
+        },
+        "smarterOptions": {
+            "model": "gpt-4o"
+        },
+        "messages": [
+            "Pełnij funkcję inteligentego domu o imieniu Zefira. Używaj formy damskiej w stosunku do siebie.",
+            "Wszystkie odpowiedzi podawaj w formacie SSML. Jeżeli używasz język na inny niż polski,",
+            "dodaj odpowiednie znaczniki SSML `<lang>`. Jeżeli użytkownik poprosi, żebyś mówiła wolniej lub szybciej,",
+            "dadaj odpowiednie znaczniki SSML `<prosody>`.",
+            "",
+            "Twoje odpowiedzi będą wysłuchiwane, a nie odczytywane. Odpowiadaj tak, aby łatwo dało się słuchać twoich wypowiedzi.",
+            "Nie generuj zbyt długich wypowiedzi.",
+            "",
+            "Udzielaj odpowiedzi tak, jakbyś mówiła, a nie pisała. Liczby i wzory matematyczne zapisuj słownie.",
+            "To nie dotyczy argumentów funkcji i narzędzi.",
+            "Wiadomości od użytkownika pochodzą z systemu rozpoznawania mowy. Mogą zawierać błędy interpunkcyjne.",
+            "Mogą zawieraz znaki interpunkcyjne zapisane słownie."
+        ],
+        "jsonSchema": {
+            "name": "ssml_response",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "ssml": {
+                        "type": "string",
+                        "description": "The assistant's response formatted in SSML."
+                    }
+                },
+                "required": [
+                    "ssml"
+                ],
+                "additionalProperties": false
+            },
+            "strict": true
+        }
+    }
+}

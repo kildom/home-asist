@@ -5,15 +5,15 @@ import { Chat } from "./chat";
 import { Instance } from "./instance";
 
 
-export const RevertResponse = Symbol('RevertResponse');
-export const RevertQuery = Symbol('RevertQuery');
-
-
 export type ToolResult =
     | string // Normal response.
     | object // Response that will be converted to JSON.
-    | typeof RevertResponse // Revert chat to state from before message containing this tool invocation.
-    | typeof RevertQuery // Revert chat to state from before latest user query message.
+    | {
+        revertType:
+            | 'response' // Revert chat to state from before message containing this tool invocation.
+            | 'query', // Revert chat to state from before latest user query message.
+        stopProcessing?: boolean,
+    }
     ; // Or, throw an error to indicate a failure.
 
 
@@ -30,7 +30,7 @@ export interface Tool {
     dynamic: boolean; // dynamic tools are put at the end allowing non-dynamic tools caching.
     hidden: boolean; // hidden tools are not available for the assistant.
     toolkit: Toolkit;
-    schema: z.ZodType;
+    schema?: z.ZodType;
     callback: (args: any) => ToolResult | Promise<ToolResult>;
     /* To maximize cache hits, for the first time, sort tool in following order:
        - static, visible
@@ -59,7 +59,7 @@ export function functionTool(proto: ToolPrototype, toolkit: Toolkit, callback: T
         dynamic: proto.dynamic || false,
         hidden: proto.hidden || false,
         toolkit,
-        schema: proto.args || z.any(),
+        schema: proto.args,
         callback,
     };
     if (proto.args) {
@@ -81,7 +81,7 @@ export class Toolkit {
         public name: string
     ) {
         //this.instance = chat.instance;
-        //this.chat.addModule(this);
+        this.chat.addToolkit(this);
     }
 
     /**
