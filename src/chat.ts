@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import OpenAI from "openai";
-import { functionTool, Tool, Toolkit, ToolPrototype } from "./toolkit";
-import { ChatCompletionCreateParamsSubset, config, consts } from './config';
+import { Tool, Toolkit } from "./toolkit";
+import { config, consts } from './config';
 import { DumpObject } from './debug';
 import { Phone } from './tools/phone';
 import { ChatManager } from './tools/chat-manager';
-import { processMessage } from './ssml-process';
+import { Instance } from './instance';
 
 
 
@@ -66,14 +66,16 @@ export class Chat {
     private dump = new DumpObject('chat');
     private active: boolean = true;
 
+    public constructor(
+        public instance: Instance,
+    ) {
+    }
+
     public addToolkit(toolkit: Toolkit): void {
         this.toolkits.push(toolkit);
     }
 
-    public addTool(tool: Tool): void;
-    public addTool(toolPrototype: ToolPrototype, toolkit: Toolkit, callback: Tool['callback']): void;
-    public addTool(toolOrProto: ToolPrototype | Tool, toolkit?: Toolkit, callback?: Tool['callback']): void {
-        let tool: Tool = toolkit ? functionTool(toolOrProto as ToolPrototype, toolkit!, callback!) : toolOrProto as Tool;
+    public addTool(tool: Tool): void {
         this.tools.push(tool);
     }
 
@@ -152,8 +154,8 @@ export class Chat {
 
             ...(
                 this.smarter
-                ? { ...config.chatGPT.standardOptions, ...config.chatGPT.smarterOptions }
-                : config.chatGPT.standardOptions
+                    ? { ...config.chatGPT.standardOptions, ...config.chatGPT.smarterOptions }
+                    : config.chatGPT.standardOptions
             ),
         };
 
@@ -315,10 +317,12 @@ export class Chat {
             if (!tool) {
                 // TODO: say throw new Error('Unknown tool name: ' + call.function.name);
                 console.error('Unknown tool name: ' + call.function.name);
-                returnValues.push({role: 'tool', tool_call_id: call.id, content: JSON.stringify({
-                    status: 'error',
-                    message: 'Unknown tool name: ' + call.function.name,
-                })});
+                returnValues.push({
+                    role: 'tool', tool_call_id: call.id, content: JSON.stringify({
+                        status: 'error',
+                        message: 'Unknown tool name: ' + call.function.name,
+                    })
+                });
                 continue;
             }
             let args: any;
@@ -329,10 +333,12 @@ export class Chat {
                 } catch (e) {
                     // TODO: say: Nieprawidłowe argumenty dla narzędzia: ${name}: e.message
                     console.error('Invalid arguemnt: ' + name, e);
-                    returnValues.push({role: 'tool', tool_call_id: call.id, content: JSON.stringify({
-                        status: 'error',
-                        message: 'Unknown tool name: ' + (e as Error).message,
-                    })});
+                    returnValues.push({
+                        role: 'tool', tool_call_id: call.id, content: JSON.stringify({
+                            status: 'error',
+                            message: 'Unknown tool name: ' + (e as Error).message,
+                        })
+                    });
                     continue;
                 }
             } else {
@@ -354,10 +360,13 @@ export class Chat {
             } else {
                 returnContent = res;
             }
-            returnValues.push({role: 'tool', tool_call_id: call.id, content: returnContent});
+            returnValues.push({ role: 'tool', tool_call_id: call.id, content: returnContent });
         }
         // TODO: say: response
-        console.log('assistant:', choice.message.content ? processMessage(choice.message.content) : choice.message.content);
+        console.log('assistant:', choice.message.content);
+        if (choice.message.content) {
+            this.instance.player.assistant(choice.message.content)
+        }
         if (revertQuery) {
             console.log('Reverting query');
             // Remove everything from activeMessages which is most recent user message and everything after it.
@@ -397,34 +406,40 @@ export class Chat {
 
 async function test1() {
     let messages = [
+        'Bądż mądrzejsza',
+        'Podaj listę dziesięciu najpopularniejszych języków programowania.',
         // 'Wyszukaj w google jaka jest czwarta liczba pierwsza.',
         // 'Pomnóż ją przez 2.',
         // 'Wyślij tą liczbę na telefon użytkownika: Dominik.',
-        //'Bądż mądrzejsza i Mój numer telefonu to +48 234 12 12 33.',
-        // 'Wyślij wiadomość z tym numerem na telefon użytkownika: Dominik.',
+        // 'Bądź mądrzejsza i Mój numer telefonu to +48 234 12 12 33.',
+        // 'Wyślij wiadomość z tym numerem na telefonu do mnie, czyli Dominik.',
+        // 'Bądź głupsza',
         // 'Jak masz na imię?',
         // 'Do widzenia',
         // 'Bądż mądrzejsza, a następnie wyślij wiadomość z aktualną datą i czasem na telefon użytkownika: Dominik.',
-        //'Wyślij wiadomość z aktualną datą i czasem na telefon użytkownika: Dominik.',
-        //'Do widzenia',
-        //'Jak masz na imię?',
-        //'Bądż mądrzejsza i powiedz jaka jest dziesiąta liczba pierwsza.',
-        //'Jaka jest dziesiąta liczba pierwsza.',
-        //'Bądż mądrzejsza',
-        'Przetłumacz na japoński zdanie: mama ma kota.',
-        'A teraz na angielski.',
-        'Powiedz to jeszcze raz ale znacznie wolniej',
-        //'Oznacz tą rozmowę w celu debugowania.',
-        //'Podaj kod w Python\'ie, który oblicza sumę liczb od 1 do 100.',
-        //'oznacz tą rozmowę z opiem kod został nieprawidłowo odczytany',
+        // 'Wyślij wiadomość z aktualną datą i czasem na telefon użytkownika: Dominik.',
+        // 'Do widzenia',
+        // 'Jak masz na imię?',
+        // 'Bądż mądrzejsza i powiedz jaka jest dziesiąta liczba pierwsza.',
+        // 'Jaka jest dziesiąta liczba pierwsza.',
+        // 'Przetłumacz na japoński zdanie: mama ma kota.',
+        // 'A teraz na angielski.',
+        // 'A teraz na hebrajski.',
+        // 'Powiedz to jeszcze raz ale znacznie wolniej',
+        // 'Oznacz tą rozmowę w celu debugowania.',
+        // 'Podaj kod w Python\'ie, który oblicza sumę liczb od 1 do 100.',
+        // 'oznacz tą rozmowę z opiem kod został nieprawidłowo odczytany',
+        // 'Bądź mądrzejsza i opowiedz jakąś zabawną historyjkę.',
     ]
-    let chat = new Chat();
+    let instance = new Instance();
+    let chat = new Chat(instance);
     new Phone(chat);
     new ChatManager(chat);
     chat.start();
     for (let m of messages) {
         console.log('------', m.substring(0, 50));
         console.log('wait');
+        for (let i = 0; i < 100; i++) chat.instance.player.effect('progress', true);
         let r = await chat.query(m);
         console.log('generate');
         let q = await r.get();
@@ -432,6 +447,7 @@ async function test1() {
         let processResult = await chat.process(q);
         while (processResult === 'repeat') {
             console.log('repeat');
+            for (let i = 0; i < 100; i++) chat.instance.player.effect('progress', true);
             let r = await chat.query();
             console.log('generate');
             let q = await r.get();
@@ -442,9 +458,8 @@ async function test1() {
         console.log('done');
     }
     new DumpObject('end').dump((chat as any).messages, 'messages');
-    //let r = await chat.query('Powiedz jak masz na imię i wyszukaj w Google dwie frazy "jak usmażyć jaja w mikrofali" i "jaki kolor mają centki geparda".');
-    //let r = await chat.query('Opowiedz bardzo długą historię.');
-    //await r.get();
+    chat.instance.player.effect('fade-out');
+    instance.player.waitForSilence();
 }
 
 test1();

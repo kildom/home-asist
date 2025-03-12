@@ -3,6 +3,8 @@ import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { Chat } from "./chat";
 import { Instance } from "./instance";
+import { config } from "./config";
+import { SoundPlayer } from "./player";
 
 
 export type ToolResult =
@@ -10,19 +12,18 @@ export type ToolResult =
     | object // Response that will be converted to JSON.
     | {
         revertType:
-            | 'response' // Revert chat to state from before message containing this tool invocation.
-            | 'query', // Revert chat to state from before latest user query message.
+        | 'response' // Revert chat to state from before message containing this tool invocation.
+        | 'query', // Revert chat to state from before latest user query message.
         stopProcessing?: boolean,
     }
     ; // Or, throw an error to indicate a failure.
 
 
-export interface ToolPrototype {
-    name: string,
-    description: string,
-    args?: z.ZodType,
-    dynamic?: boolean,
-    hidden?: boolean,
+export enum ToolState {
+    Normal,
+    Hidden,
+    Dynamic,
+    DynamicHidden,
 }
 
 export interface Tool {
@@ -44,43 +45,18 @@ export interface Tool {
        */
 }
 
-export type ToolArgsInfer<T extends ToolPrototype> = z.infer<Exclude<T['args'], undefined>>;
-
-export function functionTool(proto: ToolPrototype, toolkit: Toolkit, callback: Tool['callback']): Tool {
-    let result: Tool = {
-        tool: {
-            type: 'function',
-            function: {
-                name: proto.name,
-                description: proto.description,
-                strict: false,
-            },
-        },
-        dynamic: proto.dynamic || false,
-        hidden: proto.hidden || false,
-        toolkit,
-        schema: proto.args,
-        callback,
-    };
-    if (proto.args) {
-        let rf = zodResponseFormat(proto.args, proto.name);
-        delete rf.json_schema.schema!['$schema'];
-        result.tool.function.parameters = rf.json_schema.schema;
-        result.tool.function.strict = true;
-    }
-    return result;
-}
-
 
 export class Toolkit {
 
     public instance: Instance;
+    public player: SoundPlayer;
 
     public constructor(
         public chat: Chat,
         public name: string
     ) {
-        //this.instance = chat.instance;
+        this.instance = chat.instance;
+        this.player = this.instance.player;
         this.chat.addToolkit(this);
     }
 
@@ -117,6 +93,47 @@ export class Toolkit {
      * Called when chat is going to be serialized.
      */
     public onSerialize(): void | Promise<void> {
+    }
+
+    protected addTool<T extends z.ZodTypeAny>(
+        schema: T,
+        callback: (args: z.infer<T>) => ToolResult | Promise<ToolResult>,
+        initialState: ToolState = ToolState.Normal
+    ): Tool {
+        let m = schema.description?.match(/^function\s+([a-z0-9_]+)$/i);
+        if (!m) throw new Error('Function name not found in description');
+        let name = m[1];
+        if (!(name in config.functions)) throw new Error(`Function ${name} prompts not configured.`);
+        let prompts = (config.functions as any)[name] as { [key: string]: string };
+        let result: Tool = {
+            tool: {
+                type: 'function',
+                function: {
+                    name,
+                    description: prompts.desc,
+                    strict: false,
+                },
+            },
+            dynamic: initialState === ToolState.Dynamic || initialState === ToolState.DynamicHidden,
+            hidden: initialState === ToolState.Hidden || initialState === ToolState.DynamicHidden,
+            toolkit: this,
+            callback,
+        };
+        if ((schema instanceof z.ZodObject) && Object.keys(schema.shape).length > 0) {
+            let rf = zodResponseFormat(schema, name);
+            delete rf.json_schema.schema!['$schema'];
+            delete rf.json_schema.schema!.description;
+            result.schema = schema;
+            result.tool.function.parameters = rf.json_schema.schema;
+            result.tool.function.strict = true;
+            let props = result.tool.function.parameters?.properties as { [key: string]: { [key: string]: any } };
+            for (let key of Object.keys(props)) {
+                if (!(key in prompts)) throw new Error(`Prompt for ${key} not found in config.`);
+                props[key].description = prompts[key];
+            }
+        }
+        this.chat.addTool(result);
+        return result;
     }
 
 }

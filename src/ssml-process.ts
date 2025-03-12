@@ -1,7 +1,8 @@
 import * as sax from 'sax';
+import { config } from './config';
 
 
-export function processMessage(inputText: string): string {
+export function processMessage(inputText: string, system: boolean): string {
     inputText = inputText.trim();
     if (inputText.startsWith('{')) {
         let obj: any;
@@ -35,9 +36,9 @@ export function processMessage(inputText: string): string {
     }
     let outputText: string;
     if (inputText.startsWith('<')) {
-        outputText = processSSML(inputText);
+        outputText = processSSML(inputText, system);
     } else {
-        outputText = processPlainText(inputText);
+        outputText = processSSML(processPlainText(inputText), system);
     }
     return `<speak>${outputText}</speak>`;
 }
@@ -45,8 +46,9 @@ export function processMessage(inputText: string): string {
 function simpleMarkdownToSSML(inputText: string): string {
     return inputText
         .replace(/\*\*([a-z_0-9(\u0080-\uFFFF-][ \t,;:.()&!?a-z_0-9(\u0080-\uFFFF-]*)\*\*/gi, '<emphasis level="strong">$1</emphasis>')
-        .replace(/^\s*[*-]\s+/gmi, '<break strength="strong"/>')
-        .replace(/^\s*([0-9]+)\.\s+/gmi, '<break strength="strong"/><emphasis level="strong"><say-as interpret-as="cardinal">$1</say-as></emphasis>')
+        .replace(/^\s*[*-]\s+/gmi, '<break time="700ms"/>')
+        .replace(/^\s*([0-9]+)\.\s+/gmi, '<break time="700ms"/><emphasis level="strong">$1</emphasis>) ')
+        .replace(/\{\{([a-z-]+)\}\}/gi, '<lang xml:lang="$1">')
         ;
 }
 
@@ -71,10 +73,10 @@ interface Element {
 
 type Node = Element | string;
 
-function processSSML(inputText: string): string {
+function processSSML(inputText: string, system: boolean): string {
     let root = parseXML('<speak>' + inputText + '</speak>');
     let output: string[] = [];
-    processChildren(root, output);
+    processChildren(root, output, system);
     return output.join('');
 }
 
@@ -97,20 +99,25 @@ function getLanguageCode(value: string | undefined) {
     return undefined;
 }
 
-function processChildren(root: Element, output: string[]) {
+function processChildren(root: Element, output: string[], system: boolean) {
     let lang = getLanguageCode(root.attributes['xml:lang'] || root.attributes['lang'] || root.attributes['language'] || root.attributes['xml:language']);
     if (lang) {
-        output.push(`<voice language="${lang}" gender="female">`); // TODO: use assistant voice
+        let voice = system ? config.player.system.voice?.ssmlGender : config.player.assistant.voice?.ssmlGender;
+        let gender =
+            (voice === 'FEMALE') ? 'female' :
+            (voice === 'MALE') ? 'male' :
+            'neutral';
+        output.push(`<voice language="${lang}" gender="${gender}">`);
     }
     for (let child of root.children) {
-        processNode(child, output);
+        processNode(child, output, system);
     }
     if (lang) {
         output.push('</voice>');
     }
 }
 
-function outputElement(node: Element, attributes: string[], output: string[]) {
+function outputElement(node: Element, attributes: string[], output: string[], system: boolean) {
     let allowed = new Set(attributes);
     output.push(`<${node.name}`);
     for (let [key, value] of Object.entries(node.attributes)) {
@@ -122,12 +129,12 @@ function outputElement(node: Element, attributes: string[], output: string[]) {
         output.push('/>');
     } else {
         output.push('>');
-        processChildren(node, output);
+        processChildren(node, output, system);
         output.push(`</${node.name}>`);
     }
 }
 
-function processNode(node: Node, output: string[]) {
+function processNode(node: Node, output: string[], system: boolean) {
     if (typeof node === 'string') {
         output.push(xmlEscape(node));
         return;
@@ -139,8 +146,8 @@ function processNode(node: Node, output: string[]) {
                 name: node.name,
                 attributes: node.attributes,
                 children: [],
-            }, ['time', 'strength'], output);
-            processChildren(node, output);
+            }, ['time', 'strength'], output, system);
+            processChildren(node, output, system);
             break;
 
         case 'say-as': {
@@ -148,53 +155,53 @@ function processNode(node: Node, output: string[]) {
                 let what = node.attributes['interpret-as'].trim().toLowerCase();
                 if (what.startsWith('phone')) {
                     what = 'telephone';
-                } else if (what.startsWith('digit')) {
-                    what = 'spell-out'; // TODO: maybe 'cardinal'? -- need more experiments
+                //} else if (what.startsWith('digit')) {
+                  //  what = 'spell-out'; // TODO: maybe 'cardinal'? -- need more experiments
                 } else if (what.startsWith('number')) {
                     what = 'cardinal';
                 }
                 node.attributes['interpret-as'] = what;
             }
-            outputElement(node, ['interpret-as', 'format', 'detail'], output);
+            outputElement(node, ['interpret-as', 'format', 'detail'], output, system);
             break;
         }
 
         case 'audio': // TODO: use system voice
             output.push('<voice gender="male"><prosody rate="150%">');
-            output.push('<break strength="medium"/>Nie można wstawić pliku audio.<break strength="medium"/>');
-            processChildren(node, output);
+            output.push('<break time="800ms"/>Nie można wstawić pliku audio.<break strength="medium"/>');
+            processChildren(node, output, system);
             output.push('</prosody></voice>');
             break;
 
         case 'p':
         case 's':
-            outputElement(node, [], output);
+            outputElement(node, [], output, system);
             break;
 
         case 'sub':
-            outputElement(node, ['alias'], output);
+            outputElement(node, ['alias'], output, system);
             break;
 
         case 'prosody':
-            outputElement(node, ['rate', 'pitch', 'volume'], output);
+            outputElement(node, ['rate', 'pitch', 'volume'], output, system);
             break;
 
         case 'phoneme':
-            outputElement(node, ['alphabet', 'ph'], output);
+            outputElement(node, ['alphabet', 'ph'], output, system);
             break;
 
         case 'strong':
             output.push('<emphasis level="strong">');
-            processChildren(node, output);
+            processChildren(node, output, system);
             output.push('</emphasis></voice>');
             break;
 
         case 'emphasis':
-            outputElement(node, ['level'], output);
+            outputElement(node, ['level'], output, system);
             break;
 
         case 'voice':
-            outputElement(node, ['gender'], output);
+            outputElement(node, ['gender'], output, system);
             break;
 
         case 'par':
@@ -203,14 +210,14 @@ function processNode(node: Node, output: string[]) {
         case 'speak':
         case 'mark':
         case 'lang':
-            processChildren(node, output);
+            processChildren(node, output, system);
             break;
 
         default:
             // Flatten unknown elements
             // TODO: log unknown elements
             //output.push(`Unknown tag: ${node.name}`);
-            processChildren(node, output);
+            processChildren(node, output, system);
             break;
     }
 }
@@ -222,7 +229,7 @@ function parseXML(inputText: string): Element {
     inputText = inputText
         .trim()
         .split(/\n(?:\s*\n)+/)
-        .join('<break strength="medium"/>');
+        .join('<break time="1000ms"/>');
 
     let parser = sax.parser(false, {
         trim: false,
@@ -315,7 +322,7 @@ function test1() {
         <speak>Oto przykład prostego kodu w Pythonie, który oblicza sumę liczb od jeden do sto.</speak> <speak>Możesz użyć funkcji <break time="300ms"/> sum<break time="300ms"/> z <break time="300ms"/> funkcją <break time="300ms"/> range<break time="300ms"/> w następujący sposób:</speak> <speak>sum(range(1, 101))</speak> <speak>To zwróci sumę tych liczb.</speak>
         `;
 
-    console.log(process(inputText));
+    console.log(processMessage(inputText, false));
 }
 
 
@@ -328,9 +335,10 @@ function test2() {
         1. raz
         2. dwa
         3. trzy
+        {{en}} The exception occured in the code.
         `;
 
-    console.log(process(inputText));
+    console.log(processMessage(inputText, true));
 }
 
 

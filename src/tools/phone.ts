@@ -1,20 +1,13 @@
 import { z } from "zod"
-import { functionTool, ToolArgsInfer, Toolkit, ToolPrototype, ToolResult } from "../toolkit";
+import { Toolkit, ToolResult } from "../toolkit";
 import { Chat } from "../chat";
 
 
-const sendMessageProto = {
+export const send_message = z.object({
+    message: z.string(),
+    user_name: z.string(),
+}).describe('function send_message');
 
-    name: 'send_message',
-
-    description: 'Funkcja wysyła wiadomość lub URL do telefonu użytkownika. Funckja wymaga nazwy użytkownika, ' +
-        'więc zapytaj jeżeli jeszcze nie znasz.',
-
-    args: z.object({
-        message: z.string().describe('Wiadomość lub URL do wysłania. Liczby i numery zapisuj cyfrowo, nie używaj formy słownej.'),
-        user_name: z.string().describe('Nazwa użytkownika. Właściciel telefonu.'),
-    }),
-};
 
 export const userConfigSchema = z.object({
     number: z.string().describe('User phone number'),
@@ -28,12 +21,14 @@ export class Phone extends Toolkit {
     }
 
     public onRegister(): null {
-        this.chat.addTool(sendMessageProto, this, this.sendMessage);
+        this.addTool(send_message, this.sendMessage);
         return null;
     }
 
-    private sendMessage(args: ToolArgsInfer<typeof sendMessageProto>): ToolResult | Promise<ToolResult> {
-        console.log('Sending message to user:', args.user_name, '=>', args.message);
+    private sendMessage({ message, user_name }: z.infer<typeof send_message>): ToolResult | Promise<ToolResult> {
+        this.player.system('Wysłano wiadomość do użytkownika: ');
+        this.player.system(user_name, false);
+        console.log('Sending message to user:', user_name, '=>', message);
         return 'OK';
     }
 }

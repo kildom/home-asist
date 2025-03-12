@@ -4,6 +4,8 @@ open-ai-key.txt
 callmebot-api-key.json
 node_modules
 /data/cache/
+/data/cache-*/
 /_*
 /data/tmp/
+/data/sounds/*.wav
 *.sch.ts

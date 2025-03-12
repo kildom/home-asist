@@ -14,7 +14,7 @@
     "zod": "^3.24.2"
   },
   "scripts": {
-    "schema": "npx ts-to-zod src/config.ts src/config.sch.ts"
+    "schema": "npx tsx scripts/args2conf.ts --dev-skip-config-validation && npx tsx scripts/args2conf.ts && npx ts-to-zod src/config.ts src/config.sch.ts"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",

@@ -1,30 +1,20 @@
 import { z } from "zod"
-import { functionTool, ToolArgsInfer, Toolkit, ToolPrototype, ToolResult } from "../toolkit";
+import { Toolkit, ToolResult } from "../toolkit";
 import { Chat } from "../chat";
 import { chatTime } from "../common";
 
 const currentDateTimePrompt = 'Aktualna data i czas: ';
 
-const endChatProto = {
-    name: 'end_chat',
-    description: 'Funkcja kończy rozmowę. Wywołaj ją, gdy użytkownik zakończył rozmowę lub pożegnał się.',
-};
+export const end_chat = z.null().describe('function end_chat');
 
-const setIntelligenceProto = {
-    name: 'set_intelligence',
-    description: 'Funkcja zmienia model AI wykożystany w tej rozmowie. Jeżeli użytkownik poprosi, abyś była bardziej inteligentna, wywołaj tą funkcję.',
-    args: z.object({
-        intelligent: z.boolean().describe('true - użyj bardziej inteligentnego modelu, false - użyj standardowego modelu'),
-    }),
-};
+export const set_intelligence = z.object({
+    intelligent: z.boolean(),
+}).describe('function set_intelligence');
 
-const markChatProto = {
-    name: 'debug_mark_chat',
-    description: 'Funkcja dodaje znacznik dla developera. Wywołaj tą funckcję, jeżeli użytkownik poprosi o oznaczenie tej rozmowy w celu analizy (debugowania).',
-    args: z.object({
-        note: z.string().describe('Notatka, opis lub komentarz dla developera.'),
-    }),
-};
+export const debug_mark_chat = z.object({
+    note: z.string(),
+}).describe('function debug_mark_chat');
+
 
 export class ChatManager extends Toolkit {
 
@@ -33,9 +23,9 @@ export class ChatManager extends Toolkit {
     }
 
     public onRegister(): null {
-        this.chat.addTool(endChatProto, this, this.endChat);
-        this.chat.addTool(setIntelligenceProto, this, this.setIntelligence);
-        this.chat.addTool(markChatProto, this, this.markChat);
+        this.addTool(end_chat, this.endChat);
+        this.addTool(set_intelligence, this.setIntelligence);
+        this.addTool(debug_mark_chat, this.markChat);
         return null;
     }
 
@@ -47,22 +37,25 @@ export class ChatManager extends Toolkit {
     }
 
     private endChat(): ToolResult {
+        this.player.system('Asystent zakończył rozmowę.');
         this.chat.stop();
-        return { revertType: 'query'};
+        return { revertType: 'query' };
     }
 
-    private setIntelligence(args: ToolArgsInfer<typeof setIntelligenceProto>):ToolResult {
-        console.log('Model:', args.intelligent ? 'smarter' : 'standard');
-        if (args.intelligent !== this.chat.smarter) {
-            this.chat.smarter = args.intelligent;
+    private setIntelligence({ intelligent }: z.infer<typeof set_intelligence>): ToolResult {
+        console.log('Model:', intelligent ? 'smarter' : 'standard');
+        if (intelligent !== this.chat.smarter) {
+            this.player.system(intelligent ? 'Model inteligentny.' : 'Model standardowy.');
+            this.chat.smarter = intelligent;
             return { revertType: 'response', stopProcessing: true };
         } else {
             return 'OK';
         }
     }
 
-    private markChat(args: ToolArgsInfer<typeof markChatProto>): ToolResult {
-        console.log('!!! Marked chat:', args.note);
+    private markChat({ note }: z.infer<typeof debug_mark_chat>): ToolResult {
+        this.player.system('{{en}} Debug marker');
+        this.player.system(note);
         return 'OK';
     }
 }

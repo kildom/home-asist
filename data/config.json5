@@ -1,4 +1,5 @@
 {
+    "languageCode": "pl-PL",
     "chatGPT": {
         "standardOptions": {
             //"max_completion_tokens": 30,
@@ -38,5 +39,50 @@
             },
             "strict": true
         }
-    }
+    },
+    player: {
+        command: [
+            'mplayer',
+            '-msglevel',
+            'all=1',
+            '-quiet',
+            '-noar',
+            '-noconsolecontrols',
+            '-nojoystick',
+            '-nolirc',
+            '-nomouseinput',
+            '$$$',
+        ],
+        assistant: {
+            voice: {
+                ssmlGender: 'FEMALE',
+            },
+        },
+        system: {
+            voice: {
+                ssmlGender: 'MALE',
+            },
+            coding: {
+                speakingRate: 1.5,
+            },
+        },
+    },
+    functions: {
+        end_chat: {
+            desc: "Funkcja kończy rozmowę. Wywołaj ją, gdy użytkownik zakończył rozmowę lub pożegnał się.",
+        },
+        set_intelligence: {
+            desc: "Funkcja zmienia model AI wykożystany w tej rozmowie. Jeżeli użytkownik poprosi, abyś była bardziej inteligentna, wywołaj tą funkcję.",
+            intelligent: "true - użyj bardziej inteligentnego modelu, false - użyj standardowego modelu",
+        },
+        debug_mark_chat: {
+            desc: "Funkcja dodaje znacznik dla developera. Wywołaj tą funckcję, jeżeli użytkownik poprosi o oznaczenie tej rozmowy w celu analizy (debugowania).",
+            note: "Notatka, opis lub komentarz dla developera.",
+        },
+        send_message: {
+            desc: "Funkcja wysyła wiadomość lub URL do telefonu użytkownika. Funckja wymaga nazwy użytkownika, więc zapytaj jeżeli jeszcze nie znasz.",
+            message: "Wiadomość lub URL do wysłania. Liczby i numery zapisuj cyfrowo, nie używaj formy słownej.",
+            user_name: "Nazwa użytkownika. Właściciel telefonu.",
+        },
+    },
 }
