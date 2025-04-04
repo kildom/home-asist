@@ -33,6 +33,7 @@ export class NodeRecorder implements Recorder {
             recorder: 'sox', // TODO: Config
             silence: '31536000',
             //...config.file.recorder,
+            audioType: 'wav',
         });
 
         this.stream = this.recorder.stream();
