@@ -32,6 +32,7 @@ class NodeRecorder implements Recorder {
             recorder: config.file.recorder?.recorder ?? 'sox',
             silence: '31536000',
             ...config.file.recorder,
+            audioType: 'wav',
         });
 
         this.stream = this.recorder.stream();

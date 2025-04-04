@@ -7,6 +7,7 @@ node_modules
 /data/cache-*/
 /_*
 /data/tmp/
+/tools/
 /data/sounds/*.wav
 *.sch.ts
 .venv

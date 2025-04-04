@@ -38,7 +38,7 @@ export class SpeechPlayer {
             .update(text, 'utf8')
             .digest('hex');
 
-        let fileName = path.resolve(cacheDir, hash + '.ogg');
+        let fileName = path.resolve(cacheDir, hash + '.mp3');
         if (!fs.existsSync(fileName)) {
             await this.create(fileName, text, ssml, system);
         }
@@ -87,7 +87,7 @@ export class SpeechPlayer {
                 ...opt?.voice,
             },
             audioConfig: {
-                audioEncoding: 'OGG_OPUS',
+                audioEncoding: 'MP3',
                 sampleRateHertz: config.sampleRate,
                 ...opt?.coding,
             },
@@ -122,7 +122,7 @@ async function create(fileName: string, text: string, ssml: boolean, system: boo
             ...opt?.voice,
         },
         audioConfig: {
-            audioEncoding: 'OGG_OPUS',
+            audioEncoding: 'MP3',
             sampleRateHertz: config.sampleRate,
             ...opt?.coding,
         },
@@ -151,7 +151,7 @@ async function textSoundFile(text: string, ssml: boolean, system: boolean) {
         .update(text, 'utf8')
         .digest('hex');
 
-    let fileName = path.resolve(cacheDir, hash + '.ogg');
+    let fileName = path.resolve(cacheDir, hash + '.mp3');
     if (!fs.existsSync(fileName)) {
         await create(fileName, text, ssml, system);
     }
