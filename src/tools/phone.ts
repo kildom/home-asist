@@ -27,7 +27,7 @@ export class Phone extends Toolkit {
 
     private sendMessage({ message, user_name }: z.infer<typeof send_message>): ToolResult | Promise<ToolResult> {
         this.player.system('Wysłano wiadomość do użytkownika: ');
-        this.player.system(user_name, false);
+        this.player.system(user_name);
         console.log('Sending message to user:', user_name, '=>', message);
         return 'OK';
     }

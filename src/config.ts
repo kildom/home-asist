@@ -10,6 +10,9 @@ export const consts = {
 };
 
 interface FunctionsConfig {
+    fallback_function: {
+        desc: string;
+    },
     debug_mark_chat: {
         desc: string;
         note: string;
@@ -61,6 +64,12 @@ export interface Config {
         jsonSchema: any;
         messages?: string[];
         maxToolsIterations?: number;
+        webUserLocation?: {
+            city?: string | null;
+            country?: string | null;
+            region?: string | null;
+            timezone?: string | null;
+        };
     };
     player: {
         command: string[];

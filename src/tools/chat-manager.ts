@@ -1,11 +1,12 @@
 import { z } from "zod"
-import { Toolkit, ToolResult } from "../toolkit";
+import { RevertFlags, Toolkit, ToolResult, ToolState } from "../toolkit";
 import { Chat } from "../chat";
 import { chatTime } from "../common";
 
 const currentDateTimePrompt = 'Aktualna data i czas: ';
 
 export const end_chat = z.null().describe('function end_chat');
+export const fallback_function = z.null().describe('function fallback_function');
 
 export const set_intelligence = z.object({
     intelligent: z.boolean(),
@@ -26,6 +27,7 @@ export class ChatManager extends Toolkit {
         this.addTool(end_chat, this.endChat);
         this.addTool(set_intelligence, this.setIntelligence);
         this.addTool(debug_mark_chat, this.markChat);
+        this.addTool(fallback_function, this.fallbackFunction, ToolState.Hidden, 100);
         return null;
     }
 
@@ -39,7 +41,7 @@ export class ChatManager extends Toolkit {
     private endChat(): ToolResult {
         this.player.system('Asystent zakończył rozmowę.');
         this.chat.stop();
-        return { revertType: 'query' };
+        return RevertFlags.Query;
     }
 
     private setIntelligence({ intelligent }: z.infer<typeof set_intelligence>): ToolResult {
@@ -47,7 +49,7 @@ export class ChatManager extends Toolkit {
         if (intelligent !== this.chat.smarter) {
             this.player.system(intelligent ? 'Model inteligentny.' : 'Model standardowy.');
             this.chat.smarter = intelligent;
-            return { revertType: 'response', stopProcessing: true };
+            return RevertFlags.Response;
         } else {
             return 'OK';
         }
@@ -57,5 +59,13 @@ export class ChatManager extends Toolkit {
         this.player.system('{{en}} Debug marker');
         this.player.system(note);
         return 'OK';
+    }
+
+    private fallbackFunction(): ToolResult {
+        this.player.system('Asystent wywołał nieznaną funkcję.');
+        return {
+            status: 'error',
+            message: 'Unknown function called',
+        };
     }
 }

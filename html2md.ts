@@ -1,5 +1,5 @@
 
-
+import fs from 'node:fs';
 import { JSDOM } from 'jsdom';
 
 const listSeparator = '\uFFFA';
@@ -186,3 +186,14 @@ export function html2md(html: string): string {
         .trim() + '\n'
         ;
 }
+
+async function test1() {
+    let response = await fetch('https://www.wybory.gov.pl/prezydent2025/pl/kalendarz');
+    let text = await response.text();
+    console.log(text.length);
+    let md = html2md(text);
+    console.log(md.length);
+    fs.writeFileSync('test.md', md);
+}
+
+test1();

@@ -6,16 +6,17 @@ import { Instance } from "./instance";
 import { config } from "./config";
 import { SoundPlayer } from "./player";
 
+export enum RevertFlags {
+    None = 0, // No revert.
+    Response = 1 << 0, // Revert chat to state from before message containing this tool invocation.
+    Query = 1 << 1, // Revert chat to state from before latest user query message.
+    StopProcessing = 1 << 8, // Stop processing the query.
+}
 
 export type ToolResult =
     | string // Normal response.
     | object // Response that will be converted to JSON.
-    | {
-        revertType:
-        | 'response' // Revert chat to state from before message containing this tool invocation.
-        | 'query', // Revert chat to state from before latest user query message.
-        stopProcessing?: boolean,
-    }
+    | RevertFlags // Revert chat state
     ; // Or, throw an error to indicate a failure.
 
 
@@ -27,12 +28,13 @@ export enum ToolState {
 }
 
 export interface Tool {
-    tool: OpenAI.Chat.Completions.ChatCompletionTool;
+    tool: OpenAI.Responses.FunctionTool;
     dynamic: boolean; // dynamic tools are put at the end allowing non-dynamic tools caching.
     hidden: boolean; // hidden tools are not available for the assistant.
     toolkit: Toolkit;
     schema?: z.ZodType;
     callback: (args: any) => ToolResult | Promise<ToolResult>;
+    priority: number; // Priority of the tool. Higher number means higher priority.
     /* To maximize cache hits, for the first time, sort tool in following order:
        - static, visible
        - dynamic, visible
@@ -90,6 +92,13 @@ export class Toolkit {
     }
 
     /**
+     * This method is called when query was aborted before being processed.
+     * It may be aborted even before onQuery() is called.
+     */
+    public onAbort(): void | Promise<void> {
+    }
+
+    /**
      * Called when chat is going to be serialized.
      */
     public onSerialize(): void | Promise<void> {
@@ -98,35 +107,43 @@ export class Toolkit {
     protected addTool<T extends z.ZodTypeAny>(
         schema: T,
         callback: (args: z.infer<T>) => ToolResult | Promise<ToolResult>,
-        initialState: ToolState = ToolState.Normal
+        initialState: ToolState = ToolState.Normal,
+        priority: number = 50
     ): Tool {
         let m = schema.description?.match(/^function\s+([a-z0-9_]+)$/i);
         if (!m) throw new Error('Function name not found in description');
         let name = m[1];
+        console.log(config.functions);
         if (!(name in config.functions)) throw new Error(`Function ${name} prompts not configured.`);
         let prompts = (config.functions as any)[name] as { [key: string]: string };
         let result: Tool = {
             tool: {
                 type: 'function',
-                function: {
-                    name,
-                    description: prompts.desc,
-                    strict: false,
+                name,
+                description: prompts.desc,
+                strict: false,
+                parameters: {
+                    type: 'object',
+                    properties: {},
+                    required: [],
                 },
             },
             dynamic: initialState === ToolState.Dynamic || initialState === ToolState.DynamicHidden,
             hidden: initialState === ToolState.Hidden || initialState === ToolState.DynamicHidden,
             toolkit: this,
             callback,
+            priority,
         };
         if ((schema instanceof z.ZodObject) && Object.keys(schema.shape).length > 0) {
             let rf = zodResponseFormat(schema, name);
             delete rf.json_schema.schema!['$schema'];
             delete rf.json_schema.schema!.description;
             result.schema = schema;
-            result.tool.function.parameters = rf.json_schema.schema;
-            result.tool.function.strict = true;
-            let props = result.tool.function.parameters?.properties as { [key: string]: { [key: string]: any } };
+            if (rf.json_schema.schema) {
+                result.tool.parameters = rf.json_schema.schema;
+                result.tool.strict = true;
+            }
+            let props = result.tool.parameters?.properties as { [key: string]: { [key: string]: any } };
             for (let key of Object.keys(props)) {
                 if (!(key in prompts)) throw new Error(`Prompt for ${key} not found in config.`);
                 props[key].description = prompts[key];
