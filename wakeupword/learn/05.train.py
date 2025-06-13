@@ -64,15 +64,36 @@ class MemmapDataset(Dataset):
         y = torch.tensor(self.labels[idx])
         return x, y
 
+def evaluate(model, dataloader, criterion):
+    model.eval()
+    total_loss = 0.0
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for x, y in dataloader:
+            output = model(x).view(-1)
+            loss = criterion(output, y)
+            total_loss += loss.item()
+            preds = (output >= 0.5).float()
+            correct += (preds == y).sum().item()
+            total += y.size(0)
+
+    avg_loss = total_loss / len(dataloader)
+    accuracy = correct / total
+    return avg_loss, accuracy
+
 # ===== Training Function =====
 
 def train():
     batch_size = 32
     epochs = 100
-    lr = 20e-5
+    lr = 1e-5
 
     dataset = MemmapDataset('data/positive.dat', 'data/negative.dat', head_model_input_size)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    val_dataset = MemmapDataset('data/v_positive.dat', 'data/v_negative.dat', head_model_input_size)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     model = SharedLinearNet()
     criterion = nn.BCELoss()
@@ -101,8 +122,11 @@ def train():
         writer.add_scalar("Loss/train", avg_loss, epoch)
         accuracy = correct / total
         writer.add_scalar("Accuracy/train", accuracy, epoch)
+        val_loss, val_accuracy = evaluate(model, val_loader, criterion)
+        writer.add_scalar("Loss/val", val_loss, epoch)
+        writer.add_scalar("Accuracy/val", val_accuracy, epoch)
         writer.flush()
-        print(f"Epoch {epoch + 1}/{epochs}, Loss: {avg_loss:.8f}, Accuracy: {accuracy:.4f}")
+        print(f"Epoch {epoch + 1}/{epochs}, Loss: {avg_loss:.8f}, Accuracy: {accuracy*100:.2f}%, Val Loss: {val_loss:.8f}, Val Accuracy: {val_accuracy*100:.2f}%")
 
     writer.close()
     torch.save(model.state_dict(), "binary_model.pth")
