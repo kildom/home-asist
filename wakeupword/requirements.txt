@@ -1,0 +1,15 @@
+#soundfile
+#datasets
+#soundfile
+#librosa
+#speechbrain
+#audiomentations
+#pyloudnorm
+tqdm
+numpy
+scipy
+audiomentations
+tensorflow
+pyloudnorm
+torch
+tensorboard
