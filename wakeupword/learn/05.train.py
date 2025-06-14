@@ -119,12 +119,10 @@ def train():
             total += y.size(0)
 
         avg_loss = total_loss / len(dataloader)
-        writer.add_scalar("Loss/train", avg_loss, epoch)
         accuracy = correct / total
-        writer.add_scalar("Accuracy/train", accuracy, epoch)
         val_loss, val_accuracy = evaluate(model, val_loader, criterion)
-        writer.add_scalar("Loss/val", val_loss, epoch)
-        writer.add_scalar("Accuracy/val", val_accuracy, epoch)
+        writer.add_scalars("Loss", {"train": avg_loss, "val": val_loss}, epoch)
+        writer.add_scalars("Accuracy", {"train": accuracy, "val": val_accuracy}, epoch)
         writer.flush()
         print(f"Epoch {epoch + 1}/{epochs}, Loss: {avg_loss:.8f}, Accuracy: {accuracy*100:.2f}%, Val Loss: {val_loss:.8f}, Val Accuracy: {val_accuracy*100:.2f}%")
 

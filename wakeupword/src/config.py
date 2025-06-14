@@ -36,11 +36,11 @@ class Modifications:
 
 # Number of samples to generate for training
 class Generation:
-    positive_from_samples = 4000
-    negative_from_samples = 3000
-    negative_from_background = 1000
+    positive_from_samples = 40000 * 3
+    negative_from_samples = 30000 * 3
+    negative_from_background = 10000 * 3
     negative_from_start_of_label_probability = 0.5
-    dump_probability = 0.1
+    dump_probability = 0.001
 
 ########## Not so ofter changed configuration options ##########
 
