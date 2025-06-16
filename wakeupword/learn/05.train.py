@@ -7,8 +7,10 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import os
 from datetime import datetime
+from tqdm import tqdm
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import src.config as cfg
+from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score
 
 head_model_input_size = cfg.EMBEDDINGS_COUNT * cfg.FEATURES_COUNT
 shared_input_parts = cfg.EMBEDDINGS_WINDOW_DEVISABLE_BY
@@ -31,7 +33,7 @@ class SharedLinearNet(nn.Module):
             nn.Linear(shared_output_size * shared_input_parts, middle_layer_size),
             nn.ReLU(),
             nn.Linear(middle_layer_size, 1),
-            nn.Sigmoid()
+            #nn.Sigmoid()
         )
 
     def forward(self, x):
@@ -70,17 +72,40 @@ def evaluate(model, dataloader, criterion):
     correct = 0
     total = 0
 
+    all_preds = []
+    all_labels = []
+
     with torch.no_grad():
         for x, y in dataloader:
             output = model(x).view(-1)
             loss = criterion(output, y)
             total_loss += loss.item()
-            preds = (output >= 0.5).float()
+            preds = (output >= 0.0).float()
             correct += (preds == y).sum().item()
             total += y.size(0)
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(y.cpu().numpy())
 
     avg_loss = total_loss / len(dataloader)
     accuracy = correct / total
+
+    # Evaluation metrics
+    y_true = np.array(all_labels)
+    y_pred = np.array(all_preds)
+
+    cm = confusion_matrix(y_true, y_pred)
+    tn, fp, fn, tp = cm.ravel() if cm.size == 4 else (0, 0, 0, 0)
+
+    precision = precision_score(y_true, y_pred, zero_division=0)
+    recall = recall_score(y_true, y_pred, zero_division=0)
+    f1 = f1_score(y_true, y_pred, zero_division=0)
+
+    print(f"False Positives: {fp}/{fp + tn} = ({fp / (fp + tn) * 100:.2f}%)")
+    print(f"False Negatives: {fn}/{fn + tp} = ({fn / (fn + tp) * 100:.2f}%)")
+    print(f"Precision: {precision:.3f}")
+    print(f"Recall:    {recall:.3f}")
+    print(f"F1 Score:  {f1:.3f}")
+
     return avg_loss, accuracy
 
 # ===== Training Function =====
@@ -96,14 +121,18 @@ def train():
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     model = SharedLinearNet()
-    criterion = nn.BCELoss()
+    #criterion = nn.BCELoss()
+    criterion = nn.BCEWithLogitsLoss(pos_weight=torch.tensor([3.0]))
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
     # TensorBoard setup
     log_dir = f"runs/binary_classifier_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     writer = SummaryWriter(log_dir)
 
+    progress_bar = tqdm(total=epochs)
+
     for epoch in range(epochs):
+        progress_bar.update()
         correct = 0
         total = 0
         total_loss = 0.0
@@ -124,10 +153,11 @@ def train():
         writer.add_scalars("Loss", {"train": avg_loss, "val": val_loss}, epoch)
         writer.add_scalars("Accuracy", {"train": accuracy, "val": val_accuracy}, epoch)
         writer.flush()
-        print(f"Epoch {epoch + 1}/{epochs}, Loss: {avg_loss:.8f}, Accuracy: {accuracy*100:.2f}%, Val Loss: {val_loss:.8f}, Val Accuracy: {val_accuracy*100:.2f}%")
+        progress_bar.set_description(f"Loss: {avg_loss:.7f}, Acc: {accuracy*100:.2f}%, VLoss: {val_loss:.8f}, VAcc: {val_accuracy*100:.2f}%", True)
+        torch.save(model.state_dict(), "binary_model.pth")
 
     writer.close()
-    torch.save(model.state_dict(), "binary_model.pth")
+    #torch.save(model.state_dict(), "binary_model.pth")
     print("Training complete. Model saved to binary_model.pth")
 
 if __name__ == "__main__":

@@ -13,3 +13,4 @@ tensorflow
 pyloudnorm
 torch
 tensorboard
+sounddevice
