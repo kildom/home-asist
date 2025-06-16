@@ -13,6 +13,13 @@ Jeżeli zmianiasz język, wypisz kod języka w nawiasach, np. (en) This is Engli
 ```
 
 # Notatki:
+ - Można sugerować się tym:
+   - https://forum.arturhome.pl/t/smart-glosnik-dla-kazdego-esp32/10851
+   - https://forum.arturhome.pl/t/m5stack-atom-echo/10889
+   - https://botland.com.pl/seria-atom/17964-m5atom-echo-programowalny-glosnik-esp32-6972934172099.html
+   - Jeżeli mam coś sam lutować: https://www.infineon.com/cms/en/product/sensor/mems-microphones/mems-microphones-for-consumer/im73d122/
+   - oraz: https://kamami.pl/xiao/1184486-xiao-esp32s3-plytka-z-modulem-wifi-i-ble-esp32-s3-5906623414963.html
+   - oraz: moduł MAX98357A
  - Może spróbować ten projekt: https://github.com/agno-agi/agno
  - gdy rozmowa musi być zainicjowana przez asystenta:
    - robi ding i czeka, jeżeli użytkownik to usłyszy, może zapytać o co chodzi
