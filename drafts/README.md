@@ -18,6 +18,9 @@ Jeżeli zmianiasz język, wypisz kod języka w nawiasach, np. (en) This is Engli
    - https://forum.arturhome.pl/t/m5stack-atom-echo/10889
    - https://botland.com.pl/seria-atom/17964-m5atom-echo-programowalny-glosnik-esp32-6972934172099.html
    - Jeżeli mam coś sam lutować: https://www.infineon.com/cms/en/product/sensor/mems-microphones/mems-microphones-for-consumer/im73d122/
+     - https://dsp.stackexchange.com/questions/86862/what-are-the-step-by-step-actions-taken-in-order-to-convert-pdm-data-to-pcm-data
+     - https://fiiir.com/
+     - http://t-filter.engineerjs.com/
    - oraz: https://kamami.pl/xiao/1184486-xiao-esp32s3-plytka-z-modulem-wifi-i-ble-esp32-s3-5906623414963.html
    - oraz: moduł MAX98357A
  - Może spróbować ten projekt: https://github.com/agno-agi/agno
