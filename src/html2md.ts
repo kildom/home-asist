@@ -196,4 +196,6 @@ async function test1() {
     fs.writeFileSync('test.md', md);
 }
 
-test1();
+if (process.argv.includes('--test-html2md')) {
+    test1();
+}

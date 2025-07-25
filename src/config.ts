@@ -10,14 +10,14 @@ export const consts = {
 };
 
 interface FunctionsConfig {
-    fallback_function: {
-        desc: string;
-    },
     debug_mark_chat: {
         desc: string;
         note: string;
     },
     end_chat: {
+        desc: string;
+    },
+    fallback_function: {
         desc: string;
     },
     set_intelligence: {
@@ -28,6 +28,19 @@ interface FunctionsConfig {
         desc: string;
         message: string;
         user_name: string;
+    },
+    home_access: {
+        desc: string;
+    },
+    switch_light: {
+        desc: string;
+        rooms: string;
+        turn_on: string;
+    },
+    search_google: {
+        desc: string;
+        query: string;
+        search_context_size: string;
     },
 }
 

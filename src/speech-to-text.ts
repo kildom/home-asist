@@ -2,9 +2,11 @@
 
 import * as speech from '@google-cloud/speech';
 
-import * as config from './config';
 import { Instance } from './instance';
 import { ignoreErrors } from './common';
+
+const SAMPLE_RATE = 16000;
+const MAX_WRITE_QUEUE_SECONDS = 7;
 
 const wavHeader = new Uint8Array([
     // R   I     F     F  |   size = 2147479588   |  W     A     V     E  |  f     m     t    space
@@ -31,80 +33,71 @@ export class SpeechToText {
 
     // #region >> SpeechToText
 
-    private finalTextWaiting: string = '';
-    private nonFinalTextWaiting: string = '';
-    private addSpaceSeparator = false;
+    public finalText: string = '';
+    public nonFinalText: string = '';
+    public error: any = undefined;
+
     private recognizeStream: ReturnType<speech.SpeechClient['streamingRecognize']> | undefined = undefined;
     private writeQueue: Int16Array[] | undefined = [];
     private writeQueueSamples: number = 0;
-    private audioHandler: any;
-    private error: any = undefined;
-    private readWaiting: {
-        resolve: (value: SpeechToTextResult) => void;
-        reject: (reason?: any) => void;
-    } | undefined = undefined;
+
+    private waitPromise: Promise<void> | undefined = undefined;
+    private waitResolveCallback: (() => void) | undefined = undefined;
 
 
-    public constructor(
-        private instance: Instance,
-    ) {
+    public constructor() {
         this.writeQueue = [new Int16Array(wavHeader.buffer)];
     }
+
+    public wait(): Promise<void> {
+        if (!this.waitPromise) {
+            this.waitPromise = new Promise((resolve) => {
+                this.waitResolveCallback = resolve;
+            });
+        }
+        return this.waitPromise;
+    }
+
+    private waitResolve() {
+        if (this.waitResolveCallback) {
+            let func = this.waitResolveCallback;
+            this.waitResolveCallback = undefined;
+            this.waitPromise = undefined;
+            func();
+        }
+    }
+
 
     // #endregion
 
     // #region Output
 
-    public read(): Promise<SpeechToTextResult> {
-        if (this.error) {
-            return Promise.reject(this.error);
-        } else if (this.finalTextWaiting.length > 0) {
-            let text = this.finalTextWaiting;
-            this.finalTextWaiting = '';
-            this.nonFinalTextWaiting = '';
-            return Promise.resolve({ text, final: true });
-        } else if (this.nonFinalTextWaiting.length > 0) {
-            let text = this.nonFinalTextWaiting;
-            this.nonFinalTextWaiting = '';
-            return Promise.resolve({ text, final: false });
-        } else if (this.readWaiting) {
-            let callbacks = this.readWaiting;
-            this.readWaiting = undefined;
-            callbacks.resolve({ text: '', final: false });
-            return new Promise((resolve, reject) => {
-                this.readWaiting = { resolve, reject };
-            });
-        } else if (!this.recognizeStream) {
-            return Promise.reject(new Error('Read before or after active recognition.'));
-        } else {
-            return new Promise((resolve, reject) => {
-                this.readWaiting = { resolve, reject };
-            });
-        }
-    }
-
     private newData(result: speech.protos.google.cloud.speech.v1.IStreamingRecognitionResult) {
-        let text = result.alternatives?.[0]?.transcript ?? '';
+        let text = (result.alternatives?.[0]?.transcript ?? '').trim();
         let final = !!result.isFinal;
 
+        let newFinalText = this.finalText;
+        let newNonFinalText = this.nonFinalText;
+
         if (final) {
-            text = text?.trim();
-            if (!text) return;
-            if (this.addSpaceSeparator) {
-                text = ' ' + text;
+            if (text) {
+                if (newFinalText) {
+                    newFinalText += ' ';
+                }
+                newFinalText += text;
             }
-            this.addSpaceSeparator = true;
-            this.nonFinalTextWaiting = '';
+            newNonFinalText = '';
+        } else {
+            newNonFinalText = text;
+            if (newFinalText) {
+                newNonFinalText = ' ' + newNonFinalText;
+            }
         }
 
-        if (this.readWaiting) {
-            let callbacks = this.readWaiting;
-            this.readWaiting = undefined;
-            callbacks.resolve({ text, final });
-        } else if (final) {
-            this.finalTextWaiting += text;
-        } else if (text) {
-            this.nonFinalTextWaiting = text;
+        if (this.finalText !== newFinalText || this.nonFinalText !== newNonFinalText) {
+            this.finalText = newFinalText;
+            this.nonFinalText = newNonFinalText;
+            this.waitResolve();
         }
     }
 
@@ -118,11 +111,11 @@ export class SpeechToText {
         // writeQueueSamples not updated, since initial samples do not count towards buffer overflow.
     }
 
-    private write(data: Int16Array): void {
+    public write(data: Int16Array): void {
         if (this.writeQueue) {
             this.writeQueueSamples += data.length;
             this.writeQueue.push(data.slice());
-            if (this.writeQueueSamples > config.speechToText.maxWriteQueueSeconds * config.sampleRate) {
+            if (this.writeQueueSamples > MAX_WRITE_QUEUE_SECONDS * SAMPLE_RATE) {
                 this.cleanup(new SpeechToTextError('Buffer overflow. Service is not accepting data fast enough.'));
             }
         } else if (this.recognizeStream) {
@@ -156,23 +149,19 @@ export class SpeechToText {
             client = new speech.SpeechClient();
         }
 
-        this.finalTextWaiting = '';
+        this.finalText = '';
+        this.nonFinalText = '';
+        this.error = undefined;
 
         this.recognizeStream = client.streamingRecognize({
             config: {
                 encoding: 'LINEAR16',
-                sampleRateHertz: config.sampleRate,
-                languageCode: config.file.language,
-                ...config.file.recognition,
+                sampleRateHertz: SAMPLE_RATE,
+                languageCode: 'pl-PL',
+                //...config.file.recognition, // TODO: Config
             },
             interimResults: true,
         });
-
-        this.audioHandler = (samples: Int16Array) => {
-            this.write(samples);
-        };
-
-        this.instance.on('audio', this.audioHandler);
 
         this.recognizeStream
             .on('error', (err) => {
@@ -210,18 +199,10 @@ export class SpeechToText {
         if (err) {
             this.error = err;
         }
-        if (this.readWaiting) {
-            if (err) {
-                this.readWaiting.reject(err);
-            } else {
-                this.readWaiting.resolve({ text: '', final: false });
-            }
-            this.readWaiting = undefined;
-        }
+        this.waitResolve();
         if (this.recognizeStream) {
             let stream = this.recognizeStream;
             this.recognizeStream = undefined;
-            ignoreErrors(() => this.instance.off('audio', this.audioHandler));
             ignoreErrors(() => stream.removeAllListeners());
             ignoreErrors(() => stream.end());
             setTimeout(() => ignoreErrors(() => stream.destroy()), 500);
@@ -232,3 +213,27 @@ export class SpeechToText {
 
 }
 
+
+async function test1() {
+    let recMod = await import('./recorder-node');
+    let stt = new SpeechToText();
+    stt.start();
+    let rec = new recMod.NodeRecorder();
+    rec.onData = (data) => stt.write(data);
+    rec.onStopped = () => console.log('stopped');
+    rec.onError = (err) => console.log('error', err);
+    await rec.start();
+    console.log('Say "stop" and wait to stop the test.');
+    while (stt.finalText.indexOf('stop') < 0) {
+        await stt.wait();
+        process.stdout.write(`\r${stt.finalText}\x1b[32m${stt.nonFinalText}\x1b[0m           \r`);
+    }
+    console.log('\nStopping...');
+    stt.stop();
+    await rec.stop();
+}
+
+
+if (process.argv.includes('--test-stt')) {
+    test1();
+}

@@ -2,3 +2,4 @@
 /data/mit_rirs
 tmp
 /runs
+__pycache__

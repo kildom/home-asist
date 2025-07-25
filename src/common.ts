@@ -77,19 +77,58 @@ export function waitMultiple<T extends { [key: string]: Promise<any> }>(promises
     });
 }
 
+export interface ResolvablePromise<T> extends Promise<T> {
+    resolve: (value: T | PromiseLike<T>) => void;
+    reject: (reason?: any) => void;
+};
+
+export function resolvablePromise<T>(): ResolvablePromise<T> {
+    let resolveLocal = undefined;
+    let rejectLocal = undefined;
+    let result = new Promise((resolve, reject) => {
+        resolveLocal = resolve;
+        rejectLocal = reject;
+    }) as any;
+    result.resolve = resolveLocal;
+    result.reject = rejectLocal;
+    return result;
+}
 
 interface DelayPromise extends Promise<void> {
     cancelDelay(): void;
     resetDelay(ms: number): void;
+    resetDelayEarliest(ms: number): void;
+    resetDelayLatest(ms: number): void;
 };
 
 export function delay(ms: number): DelayPromise {
+    let endTime: number;
     let timeout: any;
+    let resolveCallback: any;
     let promise = new Promise<void>((resolve) => {
-        timeout = setTimeout(resolve, ms);
+        endTime = Date.now() + ms;
+        resolveCallback = resolve;
+        timeout = setTimeout(resolveCallback, ms);
     });
     (promise as any).cancelDelay = () => {
         clearTimeout(timeout);
+    }
+    (promise as any).resetDelay = (ms: number) => {
+        clearTimeout(timeout);
+        endTime = Date.now() + ms;
+        timeout = setTimeout(resolveCallback, ms);
+    }
+    (promise as any).resetDelayEarliest = (ms: number) => {
+        let newEndTime = Date.now() + ms;
+        if (newEndTime < endTime) {
+            (promise as DelayPromise).resetDelay(ms);
+        }
+    }
+    (promise as any).resetDelayLatest = (ms: number) => {
+        let newEndTime = Date.now() + ms;
+        if (newEndTime > endTime) {
+            (promise as DelayPromise).resetDelay(ms);
+        }
     }
     return promise as any;
 }

@@ -1,6 +1,8 @@
 import * as sax from 'sax';
 import { config } from './config';
 
+// TODO: resolve something like that: <p this is broken paragraph text</p>
+
 
 export function processMessage(inputText: string, system: boolean): string {
     inputText = inputText.trim();
@@ -201,7 +203,7 @@ function processNode(node: Node, output: string[], system: boolean) {
             break;
 
         case 'voice':
-            outputElement(node, ['gender'], output, system);
+            outputElement(node, ['gender', 'language', 'name'], output, system);
             break;
 
         case 'par':

@@ -26,7 +26,7 @@ export class SoundPlayer {
         this.file(textSoundFile(text, true, longTermCache));
     }
 
-    public effect(name: 'progress' | 'fade-out', lowPriority?: boolean): void {
+    public effect(name: 'progress' | 'fade-out' | 'ding', lowPriority?: boolean): void {
         this.file(path.join(root, `data/sounds/${name}.ogg`), lowPriority);
     }
 

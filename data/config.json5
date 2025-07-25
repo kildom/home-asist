@@ -98,5 +98,18 @@
             message: "Wiadomość lub URL do wysłania. Liczby i numery zapisuj cyfrowo, nie używaj formy słownej.",
             user_name: "Nazwa użytkownika. Właściciel telefonu.",
         },
+        home_access: {
+            desc: "Odczyt stanu oświetlenia w pomieszczeniach i na zewnątrz, temperatury, wilgotności.",
+        },
+        switch_light: {
+            desc: "Funkcja zapala i gasi światło w określonych pomieszczeniach w domu. Zawsze wykonuj tą funkcję, jeżeli rozmówca poprosi o przełączenie światła.",
+            rooms: "Lista pomieszczeń, w których ma być zapalone lub zgaszone światło",
+            turn_on: "Parametr mówiący, czy światło ma się zapalić (true) lub zgasić (false)",
+        },
+        search_google: {
+            desc: "Funkcja wyszukuje w Google. Użyj tej funkcji, jeżeli użytkownik poprosi o wyszukiwanie czegoś w internecie lub nie posiadasz informacji i musisz sprawdzić to w internecie.",
+            query: "Zapytanie do wyszukania w Google.",
+            search_context_size: "Określa jak dokładnie ma być przeszunany internet. Domyślnie `medium`, jeżeli użytkownik nie określił.",
+        },
     },
 }

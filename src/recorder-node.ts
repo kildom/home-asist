@@ -2,11 +2,12 @@ import { Readable } from 'node:stream';
 
 import { record } from 'node-record-lpcm16';
 
-import * as config from './config';
 import { Recorder } from './recorder';
 
+const SAMPLE_RATE = 16000;
 
-class NodeRecorder implements Recorder {
+
+export class NodeRecorder implements Recorder {
 
     public onError?: ((err: Error) => void) | undefined;
     public onData?: ((data: Int16Array) => void) | undefined;
@@ -22,16 +23,16 @@ class NodeRecorder implements Recorder {
 
     public async start(): Promise<void> {
         this.recorder = record({
-            sampleRate: config.sampleRate,
-            sampleRateHertz: config.sampleRate,
+            sampleRate: SAMPLE_RATE,
+            sampleRateHertz: SAMPLE_RATE,
             channels: 1,
             threshold: 0,
             endOnSilence: false,
             verbose: false,
-            recordProgram: config.file.recorder?.recorder ?? 'sox',
-            recorder: config.file.recorder?.recorder ?? 'sox',
+            recordProgram: 'sox',
+            recorder: 'sox', // TODO: Config
             silence: '31536000',
-            ...config.file.recorder,
+            //...config.file.recorder,
         });
 
         this.stream = this.recorder.stream();
@@ -130,17 +131,15 @@ class NodeRecorder implements Recorder {
 
 }
 
-
-export function create(): Recorder {
-    return new NodeRecorder();
-}
-
-
 async function test1() {
-    let rec = create();
+    let chunks: Uint8Array[] = [];
+    let rec = new NodeRecorder();
     rec.onStopped = () => console.log('closed');
     rec.onError = (err) => console.log('error', err);
-    rec.onData = (data) => console.log('data', data.length);
+    rec.onData = (data) => {
+        console.log('data', data.length);
+        chunks.push(new Uint8Array(data.buffer, data.byteOffset, data.byteLength).slice());
+    }
 
     console.log('start');
     await rec.start();
@@ -151,6 +150,10 @@ async function test1() {
     console.log('stop');
     await rec.stop();
     console.log('stopped');
+    require('node:fs').writeFileSync('test.raw', Buffer.concat(chunks));
+    
 }
 
-//test1();
+if (process.argv.includes('--test-recorder')) {
+    test1();
+}

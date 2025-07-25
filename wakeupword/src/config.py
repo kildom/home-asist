@@ -46,38 +46,36 @@ class Generation:
 
 # The embedding window must be divisible by this value if we want to reuse head model weights
 EMBEDDINGS_WINDOW_DEVISABLE_BY = 3
-# The input audio window needed to do single detection. Training sample must be exactly this length.
-_INPUT_WINDOW_LENGTH_MS = REQUIRED_MAX_WORD_LENGTH_MS + 1640
-# Number of vectors in the histogram generated from input window (INPUT_WINDOW_LENGTH_MS)
-_HISTOGRAM_LENGTH = math.ceil((_INPUT_WINDOW_LENGTH_MS - 30) / 10)
-# Number of embedding vectors generated from input window (INPUT_WINDOW_LENGTH_MS)
-EMBEDDINGS_COUNT = math.ceil(((_HISTOGRAM_LENGTH - 76) / 8 + 1) / EMBEDDINGS_WINDOW_DEVISABLE_BY) * EMBEDDINGS_WINDOW_DEVISABLE_BY
-# Number of vectors in the histogram generated from input window (INPUT_WINDOW_LENGTH_MS)
-HISTOGRAM_LENGTH = (EMBEDDINGS_COUNT - 1) * 8 + 76
-# The input audio window needed to do single detection. Training sample must be exactly this length.
-INPUT_WINDOW_LENGTH_MS = HISTOGRAM_LENGTH * 10 + 30
-# Actual maximum word length in milliseconds, which may be greater than the required because of the required alignment.
-MAX_WORD_LENGTH_MS = INPUT_WINDOW_LENGTH_MS - 1640
-# Number of features in each embedding vector
-FEATURES_COUNT = 96
-# Number of values in single frequency vector of the mel frequency spectrum
-MEL_FREQUENCY_VALUES = 32
 # Length of the input needed to generate a single mel frequency vector
-MEL_WINDOW_LENGTH_MS = 40
-# Length of single step in time that generates next mel frequency vector
-MEL_STEP_LENGTH_MS = 10
-# Length of the input needed to generate a single embedding vector
-EMBEDDING_MODEL_INPUT_LENGTH_MS = 760
-# Length of the audio that must be also analyzed before the target word (because of windows sizes).
-WORD_PREFIX_LENGTH_MS = 780
-# Length of the audio that must be also analyzed after the target word (because of windows sizes).
-WORD_SUFFIX_LENGTH_MS = 780
-# Number of milliseconds that the target word can be shifted in time and still be recognized.
-WORD_SHIFT_LENGTH_MS = 80
+MEL_WINDOW_LENGTH = 400
 # Sampling rate of the audio samples
 SAMPLE_RATE = 16000
-# Number of samples per millisecond
-SAMPLES_PER_MS = int(round(SAMPLE_RATE / 1000))
+# Maximum wake up word length in samples
+REQUIRED_MAX_WORD_LENGTH = int(math.ceil(REQUIRED_MAX_WORD_LENGTH_MS * SAMPLE_RATE / 1000))
+# Minimum wake up word length in samples
+MIN_WORD_LENGTH = int(math.floor(MIN_WORD_LENGTH_MS * SAMPLE_RATE / 1000))
+# Input shape of the embedding model
+EMBEDDING_MODEL_INPUT_SHAPE = (76, 32)
+# Step of the embedding model, number of vectors of mel bins
+EMBEDDING_MODEL_STEP = 8
+# Number of samples every mel frequency vector
+MEL_WINDOW_STEP = 160
+# Number of milliseconds that the target word can be shifted in time and still be recognized.
+WORD_SHIFT_LENGTH = EMBEDDING_MODEL_STEP * MEL_WINDOW_STEP
+# Length of the audio that must be also analyzed before the target word (because of windows sizes).
+WORD_PREFIX_LENGTH = MEL_WINDOW_LENGTH // 2 + EMBEDDING_MODEL_INPUT_SHAPE[0] * MEL_WINDOW_STEP
+# Length of the audio that must be also analyzed after the target word (because of windows sizes).
+WORD_SUFFIX_LENGTH = MEL_WINDOW_LENGTH // 2 + EMBEDDING_MODEL_INPUT_SHAPE[0] * MEL_WINDOW_STEP
+# Number of embedding vectors generated from input window (INPUT_WINDOW_LENGTH_MS)
+for EMBEDDINGS_COUNT in range(EMBEDDINGS_WINDOW_DEVISABLE_BY, 1000000, EMBEDDINGS_WINDOW_DEVISABLE_BY):
+    # Number of vectors in the mel histogram generated from input window (INPUT_WINDOW_LENGTH_MS)
+    HISTOGRAM_LENGTH = (EMBEDDINGS_COUNT - 1) * EMBEDDING_MODEL_STEP + EMBEDDING_MODEL_INPUT_SHAPE[0]
+    # The input audio window needed to do single detection. Training sample must be exactly this length.
+    INPUT_WINDOW_LENGTH = (HISTOGRAM_LENGTH - 1) * MEL_WINDOW_STEP + MEL_WINDOW_LENGTH
+    if INPUT_WINDOW_LENGTH >= REQUIRED_MAX_WORD_LENGTH + WORD_SHIFT_LENGTH + WORD_PREFIX_LENGTH + WORD_SUFFIX_LENGTH:
+        break
+# Actual maximum word length in milliseconds, which may be greater than the required because of the required alignment.
+MAX_WORD_LENGTH = INPUT_WINDOW_LENGTH - WORD_SHIFT_LENGTH - WORD_PREFIX_LENGTH - WORD_SUFFIX_LENGTH
 # Sample loudness in LUFS for training
 LOUDNESS_NORMALIZATION_DB = -22.0
 
@@ -86,31 +84,13 @@ generation = Generation()
 
 
 if __name__ == "__main__":
-    print(f"REQUIRED_MAX_WORD_LENGTH_MS = {REQUIRED_MAX_WORD_LENGTH_MS}")
-    print(f"SAMPLE_DIR = {SAMPLE_DIR}")
-    print(f"EMBEDDINGS_WINDOW_DEVISABLE_BY = {EMBEDDINGS_WINDOW_DEVISABLE_BY}")
-    print(f"INPUT_WINDOW_LENGTH_MS = {INPUT_WINDOW_LENGTH_MS}")
-    print(f"MAX_WORD_LENGTH_MS = {MAX_WORD_LENGTH_MS}")
-    print(f"HISTOGRAM_LENGTH = {HISTOGRAM_LENGTH}")
-    print(f"EMBEDDINGS_COUNT = {EMBEDDINGS_COUNT}")
-    print(f"FEATURES_COUNT = {FEATURES_COUNT}")
-    print(f"MEL_FREQUENCY_VALUES = {MEL_FREQUENCY_VALUES}")
-    print(f"MEL_WINDOW_LENGTH_MS = {MEL_WINDOW_LENGTH_MS}")
-    print(f"EMBEDDING_MODEL_INPUT_LENGTH_MS = {EMBEDDING_MODEL_INPUT_LENGTH_MS}")
-    print(f"SAMPLE_RATE = {SAMPLE_RATE}")
-    print(f"modifications.resample_probability = {modifications.resample_probability}")
-    print(f"modifications.resample_max_rate = {modifications.resample_max_rate}")
-    print(f"modifications.resample_min_rate = {modifications.resample_min_rate}")
-    print(f"modifications.background_noise_probability = {modifications.background_noise_probability}")
-    print(f"modifications.background_noise_min_db = {modifications.background_noise_min_db}")
-    print(f"modifications.background_noise_max_db = {modifications.background_noise_max_db}")
-    print(f"modifications.color_noise_probability = {modifications.color_noise_probability}")
-    print(f"modifications.color_noise_min_db = {modifications.color_noise_min_db}")
-    print(f"modifications.color_noise_max_db = {modifications.color_noise_max_db}")
-    print(f"modifications.impulse_response_probability = {modifications.impulse_response_probability}")
-    print(f"modifications.gain_probability = {modifications.gain_probability}")
-    print(f"modifications.gain_min_db = {modifications.gain_min_db}")
-    print(f"modifications.gain_max_db = {modifications.gain_max_db}")
-    print(f"generation.positive_from_samples = {generation.positive_from_samples}")
-    print(f"generation.negative_from_samples = {generation.negative_from_samples}")
-    print(f"generation.negative_from_background = {generation.negative_from_background}")
+    for name, value in list(vars().items()):
+        if name.startswith('__'):
+            continue
+        if type(value) in (int, float, str, bool):
+            print(f"{name} = {value}")
+        if type(value) in (Modifications, Generation):
+            for sub_name, sub_value in list(vars(value.__class__).items()):
+                if sub_name.startswith('__'):
+                    continue
+                print(f"{name}.{sub_name} = {sub_value}")

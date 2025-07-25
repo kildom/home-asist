@@ -30,12 +30,12 @@ print(f'    Positive: {sum(hist)}')
 print(f'    Negative: {total - sum(hist)}')
 print(f'Positive length max: {positive_length_max}')
 print(f'Positive length min: {positive_length_min}')
-print(f'Positive length configured max: {cfg.MAX_WORD_LENGTH_MS / 1000}')
+print(f'Positive length configured max: {cfg.MAX_WORD_LENGTH / cfg.SAMPLE_RATE}')
 print(f'Negative length max: {negative_length_max}')
 print(f'Negative length min: {negative_length_min}')
 print(f'Number of samples per length:\n    LEN      COUNT')
 for i in range(1, len(hist) - 1):
     if hist[i] or (max(hist[:i]) > 0 and max(hist[i + 1:]) > 0):
         print(f'    {i / 10:1.1f}{hist[i]:8}  {"■" * round(hist[i] / max(hist) * 30)}')
-if positive_length_max > cfg.MAX_WORD_LENGTH_MS / 1000:
-    raise ValueError(f'WARNING: Positive length max {positive_length_max} exceeds configured max {cfg.MAX_WORD_LENGTH_MS / 1000}.')
+if positive_length_max > cfg.MAX_WORD_LENGTH / cfg.SAMPLE_RATE:
+    raise ValueError(f'WARNING: Positive length max {positive_length_max} exceeds configured max {cfg.MAX_WORD_LENGTH / cfg.SAMPLE_RATE}.')

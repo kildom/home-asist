@@ -113,7 +113,6 @@ export class Toolkit {
         let m = schema.description?.match(/^function\s+([a-z0-9_]+)$/i);
         if (!m) throw new Error('Function name not found in description');
         let name = m[1];
-        console.log(config.functions);
         if (!(name in config.functions)) throw new Error(`Function ${name} prompts not configured.`);
         let prompts = (config.functions as any)[name] as { [key: string]: string };
         let result: Tool = {

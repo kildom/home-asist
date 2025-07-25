@@ -7,6 +7,7 @@ import { Phone } from './tools/phone';
 import { ChatManager } from './tools/chat-manager';
 import { Instance } from './instance';
 import { type } from 'node:os';
+import { resolvablePromise, ResolvablePromise } from './common';
 
 /*
  * 
@@ -24,7 +25,7 @@ type ProgressCallback = (progress: 'starting' | 'querying' | 'waiting' | 'receiv
 
 let openai: OpenAI | undefined = undefined;
 
-function createOpenAI(): OpenAI {
+export function createOpenAI(): OpenAI {
 
     if (!openai) {
 
@@ -73,8 +74,6 @@ interface ChatQueryResult {
     onUpdate: ((response: OpenAI.Responses.Response) => void) | undefined;
 }
 
-type ProcessResult = 'repeat' | 'continue' | 'break';
-
 export class Chat {
 
     private toolkits: Toolkit[] = [];
@@ -84,19 +83,38 @@ export class Chat {
     private activeMessages: OpenAI.Responses.ResponseInputItem[] = [];
     public smarter: boolean = false;
     private dump = new DumpObject('chat');
-    private active: boolean = true;
+    public active: boolean = true;
     private firstQuery: boolean = true;
     private enableWebSearch: boolean = false;
-
-    /** Report progress of the query. You can throw an error to abort the query until first 'processing'.
-     * Throwing an error after first 'processing' will put chat in undefined state.
-     */
-    public onProgress: ProgressCallback | undefined = undefined;
-
+    private stopQueryPromise: ResolvablePromise<void> | undefined = undefined;
+    private initialDataPromise!: ResolvablePromise<void>;
+    
     public constructor(
         public instance: Instance,
     ) {
         createOpenAI();
+    }
+
+    public cancelQuery(): Promise<void> {
+        if (this.stopQueryPromise) {
+            return this.stopQueryPromise;
+        }
+        this.stopQueryPromise = resolvablePromise<void>();
+        return this.stopQueryPromise;
+    }
+
+    public waitForInitialData(): Promise<void> {
+        return this.initialDataPromise;
+    }
+
+    private checkCancel(): boolean {
+        if (this.stopQueryPromise) {
+            let resolve = this.stopQueryPromise.resolve;
+            this.stopQueryPromise = undefined;
+            resolve();
+            return true;
+        }
+        return false;
     }
 
     /** Add toolkit to the chat.
@@ -187,7 +205,7 @@ export class Chat {
      * 
      * @returns array of messages that can be passed to OpenAI API.
      */
-    private prepareMessages(): { messages: OpenAI.Responses.ResponseInputItem[], instructions: string } {
+    public prepareMessages(includeActiveMessages: boolean): { messages: OpenAI.Responses.ResponseInputItem[], instructions: string } {
         // Move updated messages just before last user message
         let updatedMessages = this.messages.filter(m => m.type === 'Toolkit' && m.oldContent !== m.message.content) as ToolkitMessage[];
         if (updatedMessages.length > 0) {
@@ -217,7 +235,7 @@ export class Chat {
         let messages: OpenAI.Responses.ResponseInputItem[] = [
             ...otherMessages.map(m => m.type === 'Toolkit' ? m.message : m),
             this.activeQueryMessage,
-            ...this.activeMessages,
+            ...(includeActiveMessages ? this.activeMessages : []),
         ];
         return { messages, instructions };
     }
@@ -231,7 +249,8 @@ export class Chat {
 
     public async query(message: string): Promise<boolean> {
 
-        await this.onProgress?.('starting');
+        this.checkCancel();
+        this.initialDataPromise = resolvablePromise<void>();
 
         this.activeQueryMessage = {
             type: 'message',
@@ -242,18 +261,23 @@ export class Chat {
 
         if (this.firstQuery) {
             await this.prepareFirstQuery();
-            this.firstQuery = false;
         }
 
         try {
             for (let toolkit of this.toolkits) {
+                console.log(`--- toolkit on query ---  ${toolkit.name}`);
                 await toolkit.onQuery();
             }
 
+            if (this.checkCancel()) {
+                return this.active;
+            }
+
             for (let i = 0; i < 10; i++) {
-                await this.onProgress?.('querying');
                 let response = await this.getResponse();
-                await this.onProgress?.('processing');
+                if (!response) {
+                    return this.active;
+                }
                 let continueProcessing = await this.processResponse(response);
                 if (!continueProcessing) {
                     break;
@@ -261,8 +285,6 @@ export class Chat {
                     throw new Error('Too many request-response cycles.');
                 }
             }
-
-            this.onProgress?.('done');
 
         } catch (e) {
             for (let toolkit of this.toolkits) {
@@ -273,16 +295,24 @@ export class Chat {
                     this.instance.player.system('Wystąpił błąd podczas przetwarzania odpowiedzi.');
                 }
             }
-            this.onProgress?.('error');
             throw e;
         }
 
         return this.active;
     }
 
-    private async getResponse(): Promise<OpenAI.Responses.Response> {
+    public getCurrentModel(): string {
+        let options = {
+            model: 'gpt-4.1',
+            ...config.chatGPT.standardOptions,
+            ...(this.smarter ? { ...config.chatGPT.smarterOptions } : null),
+        };
+        return options.model;
+    }
 
-        let { messages, instructions } = this.prepareMessages();
+    private async getResponse(): Promise<OpenAI.Responses.Response | undefined> {
+
+        let { messages, instructions } = this.prepareMessages(true);
         let tools = this.prepareTools();
 
         let requestBody: OpenAI.Responses.ResponseCreateParamsStreaming = {
@@ -309,13 +339,20 @@ export class Chat {
         const responseStream = await openai!.responses.create(requestBody);
         let responseDone = false;
 
-        try {
-            await this.onProgress?.('waiting');
+        if (this.checkCancel()) {
+            responseStream.controller.abort();
+            return undefined;
+        }
 
+        try {
             let prevEncoded = '';
             for await (let event of responseStream) {
+                if (this.checkCancel()) {
+                    responseStream.controller.abort();
+                    return undefined;
+                }
                 if (prevEncoded === '') {
-                    await this.onProgress?.('receiving');
+                    this.initialDataPromise.resolve();
                 }
                 // Dump response
                 let tmpEncoded = JSON.stringify({ ...event, delta: undefined });
@@ -341,6 +378,11 @@ export class Chat {
                     throw new Error(event.response.error?.message);
                 }
             }
+
+            if (this.checkCancel()) {
+                return undefined;
+            }
+
             responseDone = true;
 
         } finally {
@@ -545,7 +587,6 @@ async function test1() {
     new Phone(chat);
     new ChatManager(chat);
     chat.start();
-    chat.onProgress = progress => console.log('progress', progress);
     for (let m of messages) {
         console.log('------', m.substring(0, 50));
         console.log('wait');
