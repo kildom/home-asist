@@ -1,5 +1,5 @@
-/data/esc50
-/data/mit_rirs
+/data
 tmp
 /runs
 __pycache__
+logdir

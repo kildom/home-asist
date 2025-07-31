@@ -1,4 +1,5 @@
 
+import torch
 import numpy as np
 import numpy.typing as npt
 import tensorflow as tf
@@ -7,27 +8,19 @@ from model_desc import nodes, get_model
 from pathlib import Path
 from types import SimpleNamespace
 from pprint import pprint
+from consts import mel_weights, fft_window, mel_bias
 
 class QuantizationState:
     pass
 
-class QuantizationFeedback:
-    pass
-
-
 class QuantizationState2D(QuantizationState):
-    sample_quantized_data: 'npt.NDArray[np.int64]' # shape: N, H, W, C
     channel_scale: 'npt.NDArray[np.float64]' # shape: C
 
 
-class QuantizationFeedback2D(QuantizationFeedback):
-    channel_shift: 'npt.NDArray[np.int32]' # shape: C
-
-
 class Node:
-    def quantize(self, state: QuantizationState) -> 'QuantizationState | QuantizationFeedback':
+    def quantize(self, state: QuantizationState, samples: 'npt.NDArray[np.int64]') -> QuantizationState:
         raise NotImplementedError()
-    def forward(self, x: 'npt.NDArray[np.float64]') -> 'npt.NDArray[np.float64]':
+    def forward(self, x: 'npt.NDArray[np.int64]') -> 'npt.NDArray[np.int64]':
         raise NotImplementedError()
 
 def get_channel_min_max(x: 'npt.NDArray') -> 'tuple[npt.NDArray, npt.NDArray]':
@@ -59,6 +52,10 @@ class Conv2D(Node):
     bias: 'npt.NDArray[np.float64]' # shape: outC
     qfilter: 'npt.NDArray[np.int64]' # shape: outC, H, W, inC
     qbias: 'npt.NDArray[np.int64]' # shape: outC
+    input_shift: 'npt.NDArray[np.int64]' # shape: inC
+    input_limits: 'npt.NDArray[np.int64]' # shape: 2, inC
+    output_shift: 'npt.NDArray[np.int64]' # shape: outC
+    output_limits: 'npt.NDArray[np.int64]' # shape: 2, outC
 
     def __init__(self, desc):
         self.filter = desc.filter.astype(np.float64)
@@ -70,13 +67,14 @@ class Conv2D(Node):
         # dummy values for now
         self.qfilter = self.filter.astype(np.int64)
         self.qbias = self.bias.astype(np.int64)
+        self.output_shift = self.bias.astype(np.int64)
 
-    def quantize(self, state: QuantizationState) -> 'QuantizationState|QuantizationFeedback':
-        input_shift = np.zeros(self.in_channels, dtype=np.int64)
+    def quantize(self, state: QuantizationState, samples: 'npt.NDArray[np.int64]') -> QuantizationState:
+        self.input_shift = np.zeros(self.in_channels, dtype=np.int64)
         while True: # Repeat only if input_shift was adjusted
             in_channel_min, in_channel_max = get_channel_min_max(state.sample_quantized_data) # TODO: Move outside of the loop
             # Adjust input to the current bit shift
-            in_scale = state.channel_scale / (1 << input_shift)
+            in_scale = state.channel_scale / (1 << self.input_shift)
             in_channel_min = in_channel_min >> input_shift
             in_channel_max = in_channel_max >> input_shift
             in_channel_est = np.maximum(np.max(np.abs(in_channel_min)), np.max(np.abs(in_channel_max))) >> 1 # TODO: Better estimate
@@ -120,24 +118,56 @@ class Conv2D(Node):
                 input_shift += 1
                 continue
             break
-        if np.max(input_shift) > 0:
-            feedback = QuantizationFeedback2D()
-            feedback.channel_shift = input_shift
-            return feedback
         # TODO: Maximize input clamping
         # TODO: Calculate output shifts to fit into int16 output range
+        self.output_shift = np.zeros(self.out_channels, dtype=np.int64)
+        max_output = np.maximum(np.sum(positive_addends, axis=1), np.sum(negative_addends, axis=1))
+        while np.max(max_output) > FULL_RANGE_INT16:
+            too_big = (max_output > FULL_RANGE_INT16).astype(np.int64)
+            output_scale = output_scale / (1 + too_big.astype(np.float64))
+            max_output = max_output >> too_big
+            self.output_shift += too_big
         # TODO: Adjust output shifts based on feedback (probably in different method)
         state = QuantizationState2D()
         state.channel_scale = output_scale
-        state.sample_quantized_data = np.array([])
         return state
 
-n = Conv2D(nodes[0])
-s = QuantizationState2D()
-s.channel_scale = np.array([255], dtype=np.float64)
-s.sample_quantized_data = np.random.randint(0, 255, (10, 76, 34, 1), dtype=np.int64)
-r = n.quantize(s)
+# n = Conv2D(nodes[0])
+# s = QuantizationState2D()
+# s.channel_scale = np.array([255], dtype=np.float64)
+# s.sample_quantized_data = np.random.randint(0, 255, (10, 76, 34, 1), dtype=np.int64)
+# r = n.quantize(s)
 
-pprint(n.qfilter)
-pprint(n.qbias)
-pprint(r.__dict__)
+# pprint(n.qfilter)
+# pprint(n.qbias)
+# pprint(n.output_shift)
+# pprint(r.__dict__)
+
+##########################################################
+# Mel spectrogram 100% compatible with the original model
+##########################################################
+
+# mod, mod_in, mod_out = get_model(12400)
+# data = np.random.rand(12400).astype(np.float32) * 2 - 1
+# mod.set_tensor(mod_in, data.reshape(1, -1))
+# mod.invoke()
+# mel = mod.get_tensor(66).reshape(-1, 32)
+
+# def calc_mel(data):
+#     data = data[:400]
+#     data = data * fft_window
+#     data = np.pad(data, (0, 512 - len(data)), mode='constant', constant_values=0)
+#     data = torch.from_numpy(data)
+#     compl = torch.fft.rfft(data)
+#     real = compl.abs().numpy()
+#     result = np.dot(mel_weights, real) + mel_bias
+#     return np.log(result)
+
+# mel2 = calc_mel(data)
+# pprint(mel[0])
+# pprint(mel2)
+# pprint(np.max(mel[0] - mel2))
+# pprint(np.max(mel[1] - calc_mel(data[160:])))
+# pprint(np.max(mel[2] - calc_mel(data[320:])))
+# pprint(np.max(mel[3] - calc_mel(data[480:])))
+# print(mod.get_tensor(mod_out).shape)
