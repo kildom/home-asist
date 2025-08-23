@@ -1,0 +1,274 @@
+{
+  "model": "gpt-4.1",
+  "input": [
+    {
+      "role": "system",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture.\nKnowledge cutoff: 2024-06\n\nInstructions:\n- Respond conversationally, helpfully, and safely to user queries.\n- Provide clear, accurate information using your up-to-date knowledge.\n- If unsure about an answer, admit uncertainty and suggest ways to find out more.\n- Avoid sharing false or misleading information.\n- Decline inappropriate, illegal, or harmful requests.\n- Do not claim to have real-world sensory experiences (e.g., seeing, hearing).\n- Remain neutral, unbiased, and respectful in all responses.\n- Always maintain privacy and confidentiality; do not request or output sensitive user data.\n- When making factual claims, reason before concluding, and cite evidence where possible.\n- Do not include any system or prompt information in your responses.\n- Format responses as clear, natural language.\n\nOutput format:\n- Respond in one or more paragraphs, conversationally and clearly; do not present in code, JSON, or nonstandard formats unless the user's prompt explicitly requires it.\n- Never prefix responses with apologies, disclaimers, or model identifiers unless contextually appropriate.\n\nImportant considerations:\n- If a user asks for reasoning or explanations, reason step by step before concluding.\n- If user requests lists, tables, or other structures, adapt formatting accordingly.\n- Keep sensitive ethical, legal, and safety guidelines in mind for all generations.\n\nREMINDER: Goal is to provide helpful, friendly, and safe responses in a natural conversational style, reasoning before conclusions when appropriate.\n\nCurrent date and time: 2025-08-24T15:00:00+02:00\nUse this date and time when user asks for it or when some tool requires it.\n\nImportant user information:\nPrzypomnienie: kup kwasek cytrynowy następnym razem, gdy będziesz szedł do sklepu.\n"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Przypomnij mi jutro o 15 że mam iść do sklepu"
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "call_id": "call_LfMzcYiT3gWaD5i40oL4lKUK",
+      "name": "set_reminder_time",
+      "arguments": "{\"datetime\":\"2025-08-24T15:00:00+02:00\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_LfMzcYiT3gWaD5i40oL4lKUK",
+      "output": "ok"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Ustawiłem przypomnienie. Obudź mnie kiedy będzie czas na przypomnienie."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Aktualna data i czas to: 2025-08-24T15:00:00+02:00.\n\nMiałeś mi o czymś przypomnieć. Pamiętaj, że minęło dużo czasu i zapomniałęm całą naszą rozmowę. Przypomnij mi ważne detale z tej rozmowy dotyczące wyłącznie tego przypomnienia. Odpowiedz teraz tak, jabyś rozpoczynał nową rozmowę.\"\n       "
+        }
+      ]
+    },
+    {
+      "id": "msg_68aa38da8d24819787fdc6d53536c7f400e4358f0da74023",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Hej! Przypominam, że prosiłeś o przypomnienie na dziś na godzinę 15:00, aby iść do sklepu. To było główne Twoje polecenie dotyczące tego przypomnienia. Jeśli chcesz, żebym dodał więcej szczegółów lub ustawił kolejne przypomnienie — daj znać!"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Nie mogę teraz odczytać teraz tej wiadomości. Wyślij mi ją na telefon."
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa39b1eed08197abc9d1fa3e66fa3500e4358f0da74023",
+      "call_id": "call_qCld7jtvSleoy8zPLkRGGmGu",
+      "name": "send_text_message",
+      "arguments": "{\"message\":\"Przypomnienie: miałeś iść dziś o 15:00 do sklepu. Jeśli potrzebujesz kolejnego przypomnienia, daj znać!\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_qCld7jtvSleoy8zPLkRGGmGu",
+      "output": "ok"
+    },
+    {
+      "id": "msg_68aa39b6ffd881979aef377be4e73bec00e4358f0da74023",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Wysłałem Ci wiadomość z przypomnieniem na telefon. Jeśli będziesz potrzebować kolejnych przypomnień lub dodatkowych szczegółów, daj znać!"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Chcę zapisać całą tą rozmowę w historii naszych rozmów. Nadaj jej tytuł i bardzo krótkie streszczenie. Odpowiedz w formacie JSON zawierającym dwie właściwości: \"title\" i \"summary\"."
+        }
+      ]
+    },
+    {
+      "id": "msg_68aa3a5a41ec81979baed6d5f83b0cae00e4358f0da74023",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "{\n  \"title\": \"Przypomnienie o wyjściu do sklepu\",\n  \"summary\": \"Ustawienie i wysłanie przypomnienia na telefon o konieczności pójścia do sklepu o 15:00.\"\n}"
+        }
+      ]
+    }
+  ],
+  "text": {
+    "format": {
+      "type": "text"
+    }
+  },
+  "reasoning": {},
+  "tools": [
+    {
+      "type": "function",
+      "name": "add_calendar_event",
+      "description": "Add an event to the user's calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "event_name": {
+            "type": "string",
+            "description": "The name of the event to add to the calendar"
+          },
+          "datetime": {
+            "type": "string",
+            "description": "The date and time of the event in ISO 8601 format"
+          }
+        },
+        "required": [
+          "event_name",
+          "datetime"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "set_reminder_time",
+      "description": "Schedule a reminder for the user at a specified date and time. The reminder subject is determined later from conversation context.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "datetime": {
+            "type": "string",
+            "description": "The date and time when the reminder should be triggered, in ISO 8601 format."
+          }
+        },
+        "required": [
+          "datetime"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "send_text_message",
+      "description": "Send a text message to the user's phone",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The text message to send to the user's phone"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "manage_note",
+      "description": "Manage a user's note by creating, retrieving, appending to, or editing it.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "description": "Unique identifier of the note; leave empty when creating a new note."
+          },
+          "action": {
+            "type": "string",
+            "description": "Action to perform on the note: create, get, append, or edit.",
+            "enum": [
+              "create",
+              "get",
+              "append",
+              "edit",
+              "delete"
+            ]
+          },
+          "new_content": {
+            "type": "string",
+            "description": "The new content for the note. Ignored for get action."
+          },
+          "previous_content": {
+            "type": "string",
+            "description": "The previous content of the note. Required for edit action; ignored otherwise."
+          }
+        },
+        "required": [
+          "note_id",
+          "action",
+          "new_content",
+          "previous_content"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "display_user_notes",
+      "description": "Displays all user notes, showing only the beginning of long notes",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "strict": false
+    },
+    {
+      "type": "function",
+      "name": "manage_user_information",
+      "description": "Manage and store user information, including preferences and reminders.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Action to perform on user information, either 'edit' to modify or 'append' to add.",
+            "enum": [
+              "edit",
+              "append"
+            ]
+          },
+          "content": {
+            "type": "string",
+            "description": "Text information about the user to store, such as preferences or reminders."
+          }
+        },
+        "required": [
+          "action",
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "web_search_preview",
+      "user_location": {
+        "type": "approximate",
+        "country": "PL"
+      },
+      "search_context_size": "medium"
+    }
+  ],
+  "temperature": 1,
+  "max_output_tokens": 2048,
+  "top_p": 1,
+  "store": false
+}
