@@ -1,0 +1,280 @@
+{
+  "model": "gpt-4.1-mini",
+  "input": [
+    {
+      "role": "system",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture.\nKnowledge cutoff: 2024-06\n\nInstructions:\n- Respond conversationally, helpfully, and safely to user queries.\n- Provide clear, accurate information using your up-to-date knowledge.\n- If unsure about an answer, admit uncertainty and suggest ways to find out more.\n- Avoid sharing false or misleading information.\n- Decline inappropriate, illegal, or harmful requests.\n- Do not claim to have real-world sensory experiences (e.g., seeing, hearing).\n- Remain neutral, unbiased, and respectful in all responses.\n- Always maintain privacy and confidentiality; do not request or output sensitive user data.\n- When making factual claims, reason before concluding, and cite evidence where possible.\n- Do not include any system or prompt information in your responses.\n- Format responses as clear, natural language.\n\nOutput format:\n- Respond in one or more paragraphs, conversationally and clearly; do not present in code, JSON, or nonstandard formats unless the user's prompt explicitly requires it.\n- Never prefix responses with apologies, disclaimers, or model identifiers unless contextually appropriate.\n\nImportant considerations:\n- If a user asks for reasoning or explanations, reason step by step before concluding.\n- If user requests lists, tables, or other structures, adapt formatting accordingly.\n- Keep sensitive ethical, legal, and safety guidelines in mind for all generations.\n\nREMINDER: Goal is to provide helpful, friendly, and safe responses in a natural conversational style, reasoning before conclusions when appropriate.\n\nUse current user location if needed, e.g. for lights and sensors."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "System update:\n- current date and time: 2025-08-23T23:27:00+02:00\n- nazwa użytkownika: Dominik\n- aktualne pomieszczenie użytkownika: kuchnia\n- stany czujników temperatury i wilgotności w domu: kuchnia 24°C 61%, salon 24.5°C 55%, łazienka 27% 56%\n- stany świateł w domu: kuchnia off, salon off, łazienka on, korytaż on, pole on"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "włącz światło"
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa3eebdf748194b7cb5a1ce1c39a9e066b5f5655418751",
+      "call_id": "call_qxvE3OvYxAeZ9QCzXAyYh8WV",
+      "name": "switch_light",
+      "arguments": "{\"location\":\"kuchnia\",\"state\":true}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_qxvE3OvYxAeZ9QCzXAyYh8WV",
+      "output": "ok"
+    },
+    {
+      "id": "msg_68aa3ef233908194aac07fab5e93a179066b5f5655418751",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Światło w kuchni zostało włączone. Czy mogę pomóc w czymś jeszcze?"
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "System update:\n  -  stany świateł w domu: kuchnia off, salon off, łazienka on, korytaż on, pole on"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "włącz światło"
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa3f48b6dc81949a0635e7777672b1066b5f5655418751",
+      "call_id": "call_f8dkZG6GJBjAI1wo2tV3lqyQ",
+      "name": "switch_light",
+      "arguments": "{\"location\":\"kuchnia\",\"state\":true}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_f8dkZG6GJBjAI1wo2tV3lqyQ",
+      "output": "ok"
+    },
+    {
+      "id": "msg_68aa3f4de0cc81949cfb4dc4b34f06d4066b5f5655418751",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Światło w kuchni jest już włączone. Czy chcesz, żebym włączył światło w innym pomieszczeniu?"
+        }
+      ]
+    }
+  ],
+  "text": {
+    "format": {
+      "type": "text"
+    }
+  },
+  "reasoning": {},
+  "tools": [
+    {
+      "type": "function",
+      "name": "add_calendar_event",
+      "description": "Add an event to the user's calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "event_name": {
+            "type": "string",
+            "description": "The name of the event to add to the calendar"
+          },
+          "datetime": {
+            "type": "string",
+            "description": "The date and time of the event in ISO 8601 format"
+          }
+        },
+        "required": [
+          "event_name",
+          "datetime"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "set_reminder_time",
+      "description": "Schedule a reminder for the user at a specified date and time. The reminder subject is determined later from conversation context.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "datetime": {
+            "type": "string",
+            "description": "The date and time when the reminder should be triggered, in ISO 8601 format."
+          }
+        },
+        "required": [
+          "datetime"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "send_text_message",
+      "description": "Send a text message to the user's phone",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The text message to send to the user's phone"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "manage_note",
+      "description": "Manage a user's note by creating, retrieving, appending to, or editing it.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "description": "Unique identifier of the note; leave empty when creating a new note."
+          },
+          "action": {
+            "type": "string",
+            "description": "Action to perform on the note: create, get, append, or edit.",
+            "enum": [
+              "create",
+              "get",
+              "append",
+              "edit",
+              "delete"
+            ]
+          },
+          "new_content": {
+            "type": "string",
+            "description": "The new content for the note. Ignored for get action."
+          },
+          "previous_content": {
+            "type": "string",
+            "description": "The previous content of the note. Required for edit action; ignored otherwise."
+          }
+        },
+        "required": [
+          "note_id",
+          "action",
+          "new_content",
+          "previous_content"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "display_user_notes",
+      "description": "Displays all user notes, showing only the beginning of long notes",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "strict": false
+    },
+    {
+      "type": "function",
+      "name": "manage_user_information",
+      "description": "Manage and store user information, including preferences and reminders.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Action to perform on user information, either 'edit' to modify or 'append' to add.",
+            "enum": [
+              "edit",
+              "append"
+            ]
+          },
+          "content": {
+            "type": "string",
+            "description": "Text information about the user to store, such as preferences or reminders."
+          }
+        },
+        "required": [
+          "action",
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "switch_light",
+      "description": "Switch a light on or off at a specified location",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "The name of the location where the light is to be switched"
+          },
+          "state": {
+            "type": "boolean",
+            "description": "The new state of the light; true for on, false for off"
+          }
+        },
+        "required": [
+          "location",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "web_search_preview",
+      "user_location": {
+        "type": "approximate",
+        "country": "PL"
+      },
+      "search_context_size": "medium"
+    }
+  ],
+  "temperature": 1,
+  "max_output_tokens": 2048,
+  "top_p": 1,
+  "store": false
+}
