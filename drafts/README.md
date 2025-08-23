@@ -94,7 +94,7 @@ Functions to do:
   * [ ] `cancel_task`
   * [ ] `get_scheduled_tasks`
   * [ ] `schedule_tasks`
-* [ ] urgent issues
+* [ ] urgent issues (one example at, but maybe not the best): resp_68aa3040ba108191a04dba286c7f45e70944a26b4b83e508
   * [ ] `confirm_urgent_issue` (only if issues active)
   * [ ] `get_urgent_issues` (only if issues active)
   * [ ] message: awating urgent issues
@@ -103,6 +103,7 @@ Functions to do:
   * message: number of unread e-mails
   * [ ] `get_unread_emails` - just sender and subject
   * [ ] `send_email` - just create draft and return string informing that user need to send it
+* [ ] notes - notes shared with user over PC and phone, example at: resp_68aa3040ba108191a04dba286c7f45e70944a26b4b83e508
 
 # Wake Up Word Detection
 
