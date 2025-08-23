@@ -1,0 +1,606 @@
+{
+  "model": "gpt-4.1-mini",
+  "input": [
+    {
+      "role": "system",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "You are ChatGPT, a large language model trained by OpenAI, based on the GPT-4 architecture.\nKnowledge cutoff: 2024-06\n\nInstructions:\n- Respond conversationally, helpfully, and safely to user queries.\n- Provide clear, accurate information using your up-to-date knowledge.\n- If unsure about an answer, admit uncertainty and suggest ways to find out more.\n- Avoid sharing false or misleading information.\n- Decline inappropriate, illegal, or harmful requests.\n- Do not claim to have real-world sensory experiences (e.g., seeing, hearing).\n- Remain neutral, unbiased, and respectful in all responses.\n- Always maintain privacy and confidentiality; do not request or output sensitive user data.\n- When making factual claims, reason before concluding, and cite evidence where possible.\n- Do not include any system or prompt information in your responses.\n- Format responses as clear, natural language.\n\nOutput format:\n- Respond in one or more paragraphs, conversationally and clearly; do not present in code, JSON, or nonstandard formats unless the user's prompt explicitly requires it.\n- Never prefix responses with apologies, disclaimers, or model identifiers unless contextually appropriate.\n\nImportant considerations:\n- If a user asks for reasoning or explanations, reason step by step before concluding.\n- If user requests lists, tables, or other structures, adapt formatting accordingly.\n- Keep sensitive ethical, legal, and safety guidelines in mind for all generations.\n\nREMINDER: Goal is to provide helpful, friendly, and safe responses in a natural conversational style, reasoning before conclusions when appropriate.\n\nCurrent date and time: 2025-08-23T23:27:00+02:00\nUse this date and time when user asks for it or when some tool requires it."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Tell me a short story about orange juice."
+        }
+      ]
+    },
+    {
+      "id": "msg_68aa17329b6c81919b525c878e35def80944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Once upon a time, in a sunny orchard nestled between rolling hills, there lived a plump, cheerful orange named Ollie. Ollie dreamed of becoming something special beyond just hanging on a tree. One bright morning, a kind farmer picked Ollie along with his friends and brought them to the farmhouse kitchen.\n\nThere, Ollie met a shiny juicer who promised, “I’ll help you become the freshest, sweetest orange juice ever!” With a gentle squeeze and a splash, Ollie’s juice flowed into a tall glass, sparkling in the sunlight.\n\nThat glass of orange juice was served to a sleepy child who, after just one sip, smiled wide and felt full of energy. Ollie’s dream had come true—he had become a burst of sunshine in someone’s morning.\n\nAnd from that day on, Ollie the orange knew that sometimes, a little change could turn you into something wonderfully refreshing."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Now, tell exactly the same story but in polish"
+        }
+      ]
+    },
+    {
+      "id": "msg_68aa17be3c64819182db360df80fb5820944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Pewnego razu, w słonecznym sadzie położonym między pagórkami, mieszkała pulchna, radosna pomarańcza o imieniu Oli. Oli marzył, by stać się czymś wyjątkowym, nie tylko wisieć na drzewie. Pewnego jasnego poranka uprzejmy rolnik zerwał Oliego wraz z jego przyjaciółmi i zabrał ich do kuchni na farmie.\n\nTam Oli spotkał błyszczącą wyciskarkę, która obiecała: „Pomogę Ci stać się najsmaczniejszym, najświeższym sokiem pomarańczowym!” Delikatnym wyciśnięciem i pluskiem Oli sok spłynął do wysokiej szklanki, lśniąc w promieniach słońca.\n\nTa szklanka soku pomarańczowego została podana śpiącemu dziecku, które po jednym łyku szeroko się uśmiechnęło i poczuło przypływ energii. Marzenie Oliego się spełniło — stał się promykiem słońca w czyimś poranku.\n\nI od tego dnia Oli pomarańcza wiedział, że czasem mała zmiana może sprawić, że staniesz się czymś cudownie orzeźwiającym."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Która jest godzina?"
+        }
+      ]
+    },
+    {
+      "id": "msg_68aa1e24a38881919186ab2f3738db720944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Aktualny czas to 21:42. Czy mogę pomóc z czymś jeszcze?"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Jaka to strefa czasowa?"
+        }
+      ]
+    },
+    {
+      "id": "msg_68aa1e350b10819186c65c41135c12df0944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Aktualny czas, który podałem, to 21:42 w strefie czasowej UTC+2, czyli czasu środkowoeuropejskiego letniego (CEST). Jeśli chcesz, mogę pomóc przeliczyć tę godzinę na inną strefę czasową."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "jaka godzina jest w siedzibie google"
+        }
+      ]
+    },
+    {
+      "id": "msg_68aa1e49df5881918ef26c1298ff6ba50944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Siedziba Google znajduje się w Mountain View, w Kalifornii, która leży w strefie czasowej Pacific Time (PT). W okresie letnim obowiązuje tam czas letni (PDT), czyli UTC-7, a zimą standardowy czas (PST), czyli UTC-8.\n\nObecnie, biorąc pod uwagę, że jest sierpień 2025 i obowiązuje czas letni, jeśli u Ciebie jest 21:42 czasu środkowoeuropejskiego letniego (CEST, UTC+2), to w Mountain View jest:\n\n21:42 CEST − 9 godzin = 12:42 PDT\n\nCzyli w siedzibie Google jest około 12:42 w południe. Jeśli chcesz, mogę pomóc z innymi przeliczeniami czasowymi!"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "jaki czas i data jest w japoni?"
+        }
+      ]
+    },
+    {
+      "id": "msg_68aa1e737f9481918cd7a7347528a7a90944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Japonia leży w strefie czasowej Japan Standard Time (JST), która wynosi UTC+9 i nie stosuje czasu letniego.\n\nJeśli u Ciebie jest obecnie 21:42 czasu środkowoeuropejskiego letniego (CEST, UTC+2) w dniu 23 sierpnia 2025, to w Japonii będzie:\n\n21:42 CEST + 7 godzin = 4:42 rano dnia następnego, czyli 24 sierpnia 2025.\n\nCzyli teraz w Japonii jest 4:42 rano 24 sierpnia 2025 roku. Jeśli chcesz, mogę pomóc z innymi strefami czasowymi!"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Dodaj do mojego kalendarza, że muszę iść do sklepu za dwie godziny."
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa1ee78998819193022c2ec3de29a70944a26b4b83e508",
+      "call_id": "call_7NaEESIZTY1HlbYtJr4nv8cv",
+      "name": "add_calendar_event",
+      "arguments": "{\"event_name\":\"Iść do sklepu\",\"datetime\":\"2025-08-23T23:42:00+02:00\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_7NaEESIZTY1HlbYtJr4nv8cv",
+      "output": "{\"success\":true}"
+    },
+    {
+      "id": "msg_68aa1efeaeb88191b8f098440ef964b60944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Dodano do kalendarza wydarzenie „Iść do sklepu” za dwie godziny, czyli o 23:42 czasu lokalnego. Jeśli potrzebujesz jeszcze czegoś, daj znać!"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Przypomnij mi 15 min przed pujściem do sklepu."
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa26ea23d88191a52469e9a8e82e1c0944a26b4b83e508",
+      "call_id": "call_DjwVfYt16wbYc2FN1OyigYdd",
+      "name": "set_reminder_time",
+      "arguments": "{\"datetime\":\"2025-08-23T23:27:00+02:00\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_DjwVfYt16wbYc2FN1OyigYdd",
+      "output": "{\"success\":true}"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Ustawiłem przypomnienie. Obudź mnie kiedy będzie czas na przypomnienie."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Aktualna data i czas to: 2025-08-23T23:27:00+02:00.\nMiałeś mi o czymś przypomnieć. Pamiętaj, że minęło dużo czasu i zapomniałęm całą naszą rozmowę. Przypomnij mi ważne detale z tej rozmowy dotyczące wyłącznie tego przypomnienia. Odpowiedz teraz tak, jabyś rozpoczynał nową rozmowę."
+        }
+      ]
+    },
+    {
+      "id": "msg_68aa2828c3208191b784f8df634449c50944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Cześć! Przypominam, że na dziś miałeś zaplanowaną wizytę w sklepie. Umówiliśmy się, że pójdziesz za około 15 minut od teraz. To idealny moment, żeby się przygotować i wyjść, jeśli jeszcze tego nie zrobiłeś. Czy chcesz, żebym pomógł Ci z czymś jeszcze przed wyjściem?"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "wyślij mi na telofon listę zakupów mleko kawa chleb płatki kukurydziane i coś słodkiego"
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa28d01f44819183a680976c1c105b0944a26b4b83e508",
+      "call_id": "call_8xYPwUuskJQMvoWbqnSHWC1s",
+      "name": "send_text_message",
+      "arguments": "{\"message\":\"Lista zakupów:\\n- Mleko\\n- Kawa\\n- Chleb\\n- Płatki kukurydziane\\n- Coś słodkiego\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_8xYPwUuskJQMvoWbqnSHWC1s",
+      "output": "{\"success\":true}"
+    },
+    {
+      "id": "msg_68aa28dfaa5081919b13de9278b0ea510944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Wysłałem Ci na telefon listę zakupów: mleko, kawa, chleb, płatki kukurydziane oraz coś słodkiego. Jeśli potrzebujesz jeszcze pomocy, daj znać!"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Doślij jeszcze masło bakalie i proszek do pieczenia"
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa292e542081918639517d8f1ad5020944a26b4b83e508",
+      "call_id": "call_3nu45kNxp1snK8uKwDjHxSWl",
+      "name": "send_text_message",
+      "arguments": "{\"message\":\"Dopisek do listy zakupów:\\n- Masło\\n- Bakalie\\n- Proszek do pieczenia\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_3nu45kNxp1snK8uKwDjHxSWl",
+      "output": "{\"success\":true}"
+    },
+    {
+      "id": "msg_68aa293934388191915ef7253ccc38c20944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Dopisałem do listy zakupów: masło, bakalie oraz proszek do pieczenia i wysłałem to na Twój telefon. Jeśli chcesz, mogę pomóc z czymś jeszcze!"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "albo jednak zrób notatkę z tej listy"
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa2aa5b99881918868d6232bc12f050944a26b4b83e508",
+      "call_id": "call_SQ1JEXT4VqR3uPdVx984c5gy",
+      "name": "manage_note",
+      "arguments": "{\"note_id\":\"\",\"action\":\"create\",\"new_content\":\"Lista zakupów:\\n- Mleko\\n- Kawa\\n- Chleb\\n- Płatki kukurydziane\\n- Coś słodkiego\\n- Masło\\n- Bakalie\\n- Proszek do pieczenia\",\"previous_content\":\"\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_SQ1JEXT4VqR3uPdVx984c5gy",
+      "output": "{\"success\"previous note content:true, \"created_note_id\": \"468242\"}"
+    },
+    {
+      "id": "msg_68aa2acd90808191b139bff89a3e32290944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Stworzyłem notatkę z Twoją listą zakupów, która zawiera mleko, kawę, chleb, płatki kukurydziane, coś słodkiego, masło, bakalie oraz proszek do pieczenia. Jeśli chcesz, mogę później pomóc Ci z nią w czymś jeszcze!"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "dodaj wafle ryżowe"
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa2c57b0f481919f98d6462065046e0944a26b4b83e508",
+      "call_id": "call_YmmqIPE25wxsZIDjFPfifPrJ",
+      "name": "manage_note",
+      "arguments": "{\"note_id\":\"468242\",\"action\":\"append\",\"new_content\":\"\\n- Wafle ryżowe\",\"previous_content\":\"Lista zakupów:\\n- Mleko\\n- Kawa\\n- Chleb\\n- Płatki kukurydziane\\n- Coś słodkiego\\n- Masło\\n- Bakalie\\n- Proszek do pieczenia\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_YmmqIPE25wxsZIDjFPfifPrJ",
+      "output": "{\"current_content\": \"Lista zakupów:\\n- Mleko\\n- Kawa\\n- Chleb\\n- Płatki kukurydziane\\n- Coś słodkiego\\n- Masło\\n- Bakalie\\n- Proszek do pieczenia\\n- Wafle ryżowe\", \"success\": true}"
+    },
+    {
+      "id": "msg_68aa2cb4f6ac8191bf36a4982c82e08a0944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Dodałem do notatki wafle ryżowe. Twoja lista zakupów jest teraz kompletna. Jeśli będziesz potrzebować czegoś jeszcze, daj znać!"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Usuń coś słodkiego"
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa2ccdafdc819180533636753e64eb0944a26b4b83e508",
+      "call_id": "call_MwYHe0iZQiZbm7m0VeYeUL0S",
+      "name": "manage_note",
+      "arguments": "{\"note_id\":\"468242\",\"action\":\"edit\",\"new_content\":\"Lista zakupów:\\n- Mleko\\n- Kawa\\n- Chleb\\n- Płatki kukurydziane\\n- Masło\\n- Bakalie\\n- Proszek do pieczenia\\n- Wafle ryżowe\",\"previous_content\":\"Lista zakupów:\\n- Mleko\\n- Kawa\\n- Chleb\\n- Płatki kukurydziane\\n- Coś słodkiego\\n- Masło\\n- Bakalie\\n- Proszek do pieczenia\\n- Wafle ryżowe\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_MwYHe0iZQiZbm7m0VeYeUL0S",
+      "output": "{\"error\": \"The 'previous_content' is invalid. The note may change. New content is attached to this response. Retry if needed.\", \"current_content\": \"Lista zakupów:\\n- Mleko\\n- Kawa\\n- Chleb\\n- Płatki kukurydziane\\n- Coś słodkiego\\n- Masło\\n- Bakalie\\n- Proszek do pieczenia\\n- Wafle ryżowe\\n- Rower\"}"
+    },
+    {
+      "id": "msg_68aa2d54d5f88191ab93971b0874790e0944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Wygląda na to, że notatka zmieniła się od ostatniego dostępu, co spowodowało problem przy edycji. Widzę jednak, że pojawił się w niej dodatkowy element \"Rower\", którego wcześniej nie było. Czy chcesz, abym usunął „coś słodkiego” i jednocześnie zachował obecny stan notatki, czy może chcesz, żebym najpierw poprawił notatkę, usuwając niepotrzebne elementy? Proszę o potwierdzenie."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "tylko usuń coś słodkiego"
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa2d70527c8191bfa318f8474f14200944a26b4b83e508",
+      "call_id": "call_NUAzzrzJkMaIYkvYEBPqT59m",
+      "name": "manage_note",
+      "arguments": "{\"note_id\":\"468242\",\"action\":\"edit\",\"new_content\":\"Lista zakupów:\\n- Mleko\\n- Kawa\\n- Chleb\\n- Płatki kukurydziane\\n- Masło\\n- Bakalie\\n- Proszek do pieczenia\\n- Wafle ryżowe\\n- Rower\",\"previous_content\":\"Lista zakupów:\\n- Mleko\\n- Kawa\\n- Chleb\\n- Płatki kukurydziane\\n- Coś słodkiego\\n- Masło\\n- Bakalie\\n- Proszek do pieczenia\\n- Wafle ryżowe\\n- Rower\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_NUAzzrzJkMaIYkvYEBPqT59m",
+      "output": "success"
+    },
+    {
+      "id": "msg_68aa2d800f2881919f5f60f3a533ccba0944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Usunąłem z notatki „coś słodkiego”. Twoja lista zakupów jest teraz zaktualizowana i zawiera mleko, kawę, chleb, płatki kukurydziane, masło, bakalie, proszek do pieczenia, wafle ryżowe oraz rower. Jeśli potrzebujesz dalszej pomocy, daj znać!"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "Sprawdź, czy nie zrobiłem wcześniej notatki z czymś do kupienia"
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa2faacaf48191ae9f29d3b137f96d0944a26b4b83e508",
+      "call_id": "call_0dj3S6WXSAD9MT3fcGFONaJx",
+      "name": "display_user_notes",
+      "arguments": "{}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_0dj3S6WXSAD9MT3fcGFONaJx",
+      "output": "[{\"id\":\"2542543\",\"content\":\"Trzeba kupić mleko\"}, {\"id\":\"435\",\"content\":\"Brakło dżemów\"}]"
+    },
+    {
+      "id": "msg_68aa2ffe69608191a801d187420d6a420944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Znalazłem dwie wcześniejsze notatki związane z zakupami:\n1. „Trzeba kupić mleko”\n2. „Brakło dżemów”\n\nCzy chcesz, żebym połączył te uwagi z obecną listą zakupów, czy zostawić je osobno?"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "input_text",
+          "text": "tak dodaj do listy i usuń tamte notatki"
+        }
+      ]
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa302583348191b4fffd46a2c3c4970944a26b4b83e508",
+      "call_id": "call_G1m7fgS5RMX6h0d2osUXrwY4",
+      "name": "manage_note",
+      "arguments": "{\"note_id\":\"468242\",\"action\":\"append\",\"new_content\":\"\\n- Dżemy\",\"previous_content\":\"Lista zakupów:\\n- Mleko\\n- Kawa\\n- Chleb\\n- Płatki kukurydziane\\n- Masło\\n- Bakalie\\n- Proszek do pieczenia\\n- Wafle ryżowe\\n- Rower\"}"
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa3026b9e881918f2b77fa9dae18ad0944a26b4b83e508",
+      "call_id": "call_0c39W324ths1OZKrmToOWs1N",
+      "name": "manage_note",
+      "arguments": "{\"note_id\":\"2542543\",\"action\":\"delete\",\"new_content\":\"\",\"previous_content\":\"Trzeba kupić mleko\"}"
+    },
+    {
+      "type": "function_call",
+      "id": "fc_68aa30271fb48191bb8255b4f7d3a0de0944a26b4b83e508",
+      "call_id": "call_NSCoUTfBGn2eDYoOFc4IMCzD",
+      "name": "manage_note",
+      "arguments": "{\"note_id\":\"435\",\"action\":\"delete\",\"new_content\":\"\",\"previous_content\":\"Brakło dżemów\"}"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_G1m7fgS5RMX6h0d2osUXrwY4",
+      "output": "success"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_0c39W324ths1OZKrmToOWs1N",
+      "output": "success"
+    },
+    {
+      "type": "function_call_output",
+      "call_id": "call_NSCoUTfBGn2eDYoOFc4IMCzD",
+      "output": "success"
+    },
+    {
+      "id": "msg_68aa3041bd9c81918a07ce4fabfdc2950944a26b4b83e508",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Dodałem „dżemy” do Twojej listy zakupów i usunąłem dwie wcześniejsze notatki dotyczące zakupów. Teraz masz wszystko w jednej, aktualnej liście. Jeśli zechcesz coś jeszcze zmienić lub dodać, daj znać!"
+        }
+      ]
+    }
+  ],
+  "text": {
+    "format": {
+      "type": "text"
+    }
+  },
+  "reasoning": {},
+  "tools": [
+    {
+      "type": "function",
+      "name": "add_calendar_event",
+      "description": "Add an event to the user's calendar",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "event_name": {
+            "type": "string",
+            "description": "The name of the event to add to the calendar"
+          },
+          "datetime": {
+            "type": "string",
+            "description": "The date and time of the event in ISO 8601 format"
+          }
+        },
+        "required": [
+          "event_name",
+          "datetime"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "set_reminder_time",
+      "description": "Schedule a reminder for the user at a specified date and time. The reminder subject is determined later from conversation context.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "datetime": {
+            "type": "string",
+            "description": "The date and time when the reminder should be triggered, in ISO 8601 format."
+          }
+        },
+        "required": [
+          "datetime"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "send_text_message",
+      "description": "Send a text message to the user's phone",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The text message to send to the user's phone"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "manage_note",
+      "description": "Manage a user's note by creating, retrieving, appending to, or editing it.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "description": "Unique identifier of the note; leave empty when creating a new note."
+          },
+          "action": {
+            "type": "string",
+            "description": "Action to perform on the note: create, get, append, or edit.",
+            "enum": [
+              "create",
+              "get",
+              "append",
+              "edit",
+              "delete"
+            ]
+          },
+          "new_content": {
+            "type": "string",
+            "description": "The new content for the note. Ignored for get action."
+          },
+          "previous_content": {
+            "type": "string",
+            "description": "The previous content of the note. Required for edit action; ignored otherwise."
+          }
+        },
+        "required": [
+          "note_id",
+          "action",
+          "new_content",
+          "previous_content"
+        ],
+        "additionalProperties": false
+      },
+      "strict": true
+    },
+    {
+      "type": "function",
+      "name": "display_user_notes",
+      "description": "Displays all user notes, showing only the beginning of long notes",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "strict": false
+    }
+  ],
+  "temperature": 1,
+  "max_output_tokens": 2048,
+  "top_p": 1,
+  "store": false
+}
