@@ -78,6 +78,7 @@ Functions to do:
     * [ ] `restore_conversation` - restore last or any from the list
     * [ ] `delete_conversation` - delete saved conversation (todo: onChatEnd event for module to ask if used want to delete this previously saved conversation)
     * [ ] message: list of all saved conversations
+    * [ ] Może dodatkowo: każda konwersacja jest zapisywana (z tytułem i streszczeniem wygenerowanym przez AI) i można poprosić, o listę lub wyszukanie jakiejś rozmowy.
   * [ ] `set_model` - switch between ia models
   * [ ] `add_user` - allows 3-site conversation (or more)
   * [ ] `sustain_conversation` - użytkownik ma więcej czasu na odpowiedź, np. gdy powie "daj mi chwilę na zastanowienie".
