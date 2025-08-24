@@ -80,6 +80,7 @@ Functions to do:
     * [ ] message: list of all saved conversations
   * [ ] `set_model` - switch between ia models
   * [ ] `add_user` - allows 3-site conversation (or more)
+  * [ ] `sustain_conversation` - użytkownik ma więcej czasu na odpowiedź, np. gdy powie "daj mi chwilę na zastanowienie".
 * [x] web
   * [x] `search_google`
   * [ ] `search_wikipedia`
