@@ -247,7 +247,7 @@ static constexpr uint32_t tab3[128] = {
 #define likely(x)   __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
 
-uint32_t isqrt(uint32_t s) {
+uint32_t isqrt_tmp(uint32_t s) {
     if (USE_DOUBLE) {
         return (uint32_t)std::sqrt((double)s);
     } else if (USE_FLOAT) {
@@ -293,6 +293,36 @@ uint32_t isqrt(uint32_t s) {
         //printf("%u %u\n", s, x0); // return 0;
         return x0;
         //return 0;
+    }
+}
+
+uint32_t isqrt(uint32_t s) {
+    if (USE_DOUBLE) {
+        return (uint32_t)std::sqrt((double)s);
+    } else if (USE_FLOAT) {
+        uint32_t x0 = (uint32_t)std::sqrt((float)s);
+        if (s < 16777216u) {
+            return x0;
+        } else {
+            uint32_t mul1 = x0 * x0;
+            if (unlikely(s <= mul1 - 1)) return x0 - 1;
+            uint32_t mul2 = mul1 + 2 * x0;
+            if (likely(s <= mul2)) return x0;
+            return x0 + 1;
+        }
+    } else if (s <= 1) {
+        return s;
+    } else {
+        int bits = 30 - __builtin_clz(s);
+        uint32_t x0 = (1U << (bits >> 1)) * (2U + (bits & 1));
+        uint32_t x1 = (x0 + s / x0) / 2u;
+        x0 = (x1 + s / x1) / 2u;
+        if (x0 >= x1) return x1;
+        x1 = (x0 + s / x0) / 2u;
+        if (x1 >= x0) return x0;
+        x0 = (x1 + s / x1) / 2u;
+        if (likely(x0 >= x1)) return x1;
+        return x0;
     }
 }
 
