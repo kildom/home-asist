@@ -3,3 +3,5 @@ tmp
 /runs
 __pycache__
 logdir
+_old_data
+_old/models
