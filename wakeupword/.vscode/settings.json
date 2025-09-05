@@ -1,5 +1,9 @@
 {
     "cSpell.words": [
+        "MISSALIGNMENT",
         "smpl"
+    ],
+    "python.analysis.extraPaths": [
+        "./train"
     ]
 }
