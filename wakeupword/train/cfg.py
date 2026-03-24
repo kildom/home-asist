@@ -47,29 +47,34 @@ HEAD_INPUT_DIVISIBLE_BY = 3
 
 ########## Configuration calculated based on previous data ##########
 
+# Maximum wake up word length (if spoken very slowly) in samples
 MAX_WORD_LENGTH = MAX_WORD_LENGTH_MS * SAMPLE_RATE // 1000
+# Prefix process length in samples
 PREFIX_LENGTH = int(round(PREFIX_PROCESS_LENGTH_FRACTION * EMBEDDING_MODEL_WINDOW_LENGTH))
+# Suffix process length in samples
 SUFFIX_LENGTH = int(round(SUFFIX_PROCESS_LENGTH_FRACTION * EMBEDDING_MODEL_WINDOW_LENGTH))
-MISSALIGNMENT_LENGTH = EMBEDDING_MODEL_HOP_LENGTH
-
-REQUIRED_TOTAL_AUDIO_LENGTH = PREFIX_LENGTH + MISSALIGNMENT_LENGTH + MAX_WORD_LENGTH + SUFFIX_LENGTH
-
+# Misalignment length in samples
+MISALIGNMENT_LENGTH = EMBEDDING_MODEL_HOP_LENGTH
+# Required total audio length needed for training process (in samples), actual can be longer because of the alignment
+REQUIRED_TOTAL_AUDIO_LENGTH = PREFIX_LENGTH + MISALIGNMENT_LENGTH + MAX_WORD_LENGTH + SUFFIX_LENGTH
+# Required embedding vectors count, actual can be more because of the alignment
 REQUIRED_EMBEDDING_VECTORS_COUNT = (REQUIRED_TOTAL_AUDIO_LENGTH - EMBEDDING_MODEL_WINDOW_LENGTH + EMBEDDING_MODEL_HOP_LENGTH - 1) // EMBEDDING_MODEL_HOP_LENGTH + 1
+# Actual embedding vectors count
 EMBEDDING_VECTORS_COUNT = ((REQUIRED_EMBEDDING_VECTORS_COUNT + HEAD_INPUT_DIVISIBLE_BY - 1) // HEAD_INPUT_DIVISIBLE_BY) * HEAD_INPUT_DIVISIBLE_BY
+# Actual total audio length needed for training process (in samples)
 TOTAL_AUDIO_LENGTH = EMBEDDING_MODEL_WINDOW_LENGTH + (EMBEDDING_VECTORS_COUNT - 1) * EMBEDDING_MODEL_HOP_LENGTH
 
 
-if __name__ == "__main__":
-    for name, value in list(vars().items()):
+def _test():
+    for name, value in list(globals().items()):
         if name.startswith('__'):
             continue
         if type(value) in (int, float, str, bool):
             if type(value) is int and name.endswith('_LENGTH'):
-                print(f"{name} = {value} (samples->ms: {value * 1000 / SAMPLE_RATE})")
+                print(f"{name} = {value} (ms: {value * 1000 / SAMPLE_RATE})")
             else:
                 print(f"{name} = {value}")
-        # if type(value) in (Modifications, Generation):
-        #     for sub_name, sub_value in list(vars(value.__class__).items()):
-        #         if sub_name.startswith('__'):
-        #             continue
-        #         print(f"{name}.{sub_name} = {sub_value}")
+
+
+if __name__ == "__main__":
+    _test()
