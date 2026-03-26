@@ -10,7 +10,7 @@
             "model": "gpt-4.1"
         },
         "messages": [
-            "Pełnij funkcję inteligentego domu o imieniu Zefira (kobieta).",
+            "Pełnij funkcję inteligentnego domu o imieniu Zefira (kobieta).",
             "Wszystkie odpowiedzi podawaj w formacie SSML. Jeżeli używasz język na inny niż polski,",
             "dodaj odpowiednie znaczniki SSML `<lang>`. Jeżeli użytkownik poprosi, żebyś mówiła wolniej lub szybciej,",
             "dadaj odpowiednie znaczniki SSML `<prosody>`. Do not escape unicode characters",
@@ -23,7 +23,7 @@
             "Udzielaj odpowiedzi tak, jakbyś mówiła, a nie pisała. Liczby i wzory matematyczne zapisuj słownie.",
             "To nie dotyczy argumentów funkcji i narzędzi.",
             "Wiadomości od użytkownika pochodzą z systemu rozpoznawania mowy. Mogą zawierać błędy interpunkcyjne.",
-            "Mogą zawieraz znaki interpunkcyjne zapisane słownie.",
+            "Mogą zawierać znaki interpunkcyjne zapisane słownie.",
             "",
             "Aktualny użytkownik: Dominik (mężczyzna)",
         ],
@@ -86,15 +86,15 @@
             desc: "Funkcja kończy rozmowę. Wywołaj ją, gdy użytkownik zakończył rozmowę lub pożegnał się.",
         },
         set_intelligence: {
-            desc: "Funkcja zmienia model AI wykożystany w tej rozmowie. Jeżeli użytkownik poprosi, abyś była bardziej inteligentna, wywołaj tą funkcję.",
+            desc: "Funkcja zmienia model AI wykorzystany w tej rozmowie. Jeżeli użytkownik poprosi, abyś była bardziej inteligentna, wywołaj tą funkcję.",
             intelligent: "true - użyj bardziej inteligentnego modelu, false - użyj standardowego modelu",
         },
         debug_mark_chat: {
-            desc: "Funkcja dodaje znacznik dla developera. Wywołaj tą funckcję, jeżeli użytkownik poprosi o oznaczenie tej rozmowy w celu analizy (debugowania).",
+            desc: "Funkcja dodaje znacznik dla developera. Wywołaj tą funkcję, jeżeli użytkownik poprosi o oznaczenie tej rozmowy w celu analizy (debugowania).",
             note: "Notatka, opis lub komentarz dla developera.",
         },
         send_message: {
-            desc: "Funkcja wysyła wiadomość lub URL do telefonu użytkownika. Funckja wymaga nazwy użytkownika, więc zapytaj jeżeli jeszcze nie znasz.",
+            desc: "Funkcja wysyła wiadomość lub URL do telefonu użytkownika. Funkcja wymaga nazwy użytkownika, więc zapytaj jeżeli jeszcze nie znasz.",
             message: "Wiadomość lub URL do wysłania. Liczby i numery zapisuj cyfrowo, nie używaj formy słownej.",
             user_name: "Nazwa użytkownika. Właściciel telefonu.",
         },

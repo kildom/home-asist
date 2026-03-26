@@ -11,3 +11,4 @@ node_modules
 /data/sounds/*.wav
 *.sch.ts
 .venv
+/tools/

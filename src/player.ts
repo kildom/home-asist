@@ -211,5 +211,6 @@ async function manualTest1() {
 }
 
 if (process.argv.includes('--test-player')) {
-    manualTest1();
+    manualTest1()
+        .then(() => { process.exit(0); });
 }
