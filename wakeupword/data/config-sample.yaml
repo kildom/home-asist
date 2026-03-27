@@ -1,0 +1,74 @@
+
+phrases:
+  - ["Hej Dona tu", "Hej Dona, tu"]
+
+phrase_length_min: 0.5
+phrase_length_max: 1.2
+
+negative_phrases:
+  - Klej Dona tu
+  - Haj Dona tu
+  - Hej Dana tu
+  - Hej Done tu
+  - Hej Dona to
+  - Hej Dona ty
+  - Hej Mona tu
+  - Hej Dona ku
+  - Hej Donata
+
+sources:
+
+  - type: piper
+    dir: piper
+    language: "pl"
+    positive_samples: 200
+    negative_samples: 200
+    weight: 1.0
+    length_scale: [0.6, 1.7]
+    noise_scale: [0.5, 1.5]
+    noise_w_scale: [0.5, 1.5]
+    model_weights:
+      mls_6892: 0 # disallowed mls_6892
+
+  - type: coqui-xtts_v2-cv
+    dir: coqui-xtts_v2-cv
+    language: "pl"
+    positive_samples: 1000
+    negative_samples: 1000
+    speakers: 500
+    weight: 1.0
+
+  - type: real
+    dir: coqui-xtts-speakers
+    source: tmp/coqui-xtts_v2-cv/speakers
+    mode: transcribed
+    weight: 0.8
+
+  - type: coqui-tts
+    dir: coqui-xtts-ml
+    model: tts_models/multilingual/multi-dataset/xtts_v2
+    language: "pl"
+    positive_samples: 500
+    negative_samples: 500
+    weight: 1.0
+    speaker_weights: 
+      'Tammie Ema': 0 # TODO: check which speakers cause issues and disallow them
+
+  - type: coqui-tts
+    dir: coqui-xtts-pl
+    model: tts_models/pl/mai_female/vits
+    language: "pl"
+    positive_samples: 500
+    negative_samples: 500
+    weight: 1.0
+
+  - type: real
+    dir: real
+    source: ../labeled/
+    mode: negative-only
+      # positive: all files are used as positive samples, if labels exist, they point to valid parts of the audio
+      # negative: all files are used as negative samples, if labels exist, they point to valid parts of the audio
+      # positive-labeled: labels must exist, they point to positive samples in the audio, the rest is negative
+      # fully-labeled: labels must exist, they point to positive and negative samples in the audio
+      # transcribed: text file is a transcription, full phase match - positive, partial match - ignored, no match - negative
+    weight: 1.0

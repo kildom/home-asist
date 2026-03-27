@@ -1,3 +1,5 @@
+import sys
+import json
 import wave
 import io
 import random
@@ -6,22 +8,44 @@ import subprocess
 import numpy as np
 from piper import PiperVoice, SynthesisConfig
 from pathlib import Path
+from cfg import config, SourceConfig
+import cfg
+from scipy.io import wavfile
+from tqdm import tqdm
+from src import write_sample
+from src import generate_simple_phrase_set
 
 # Generate training data using Piper TTS
 
 
-tmp_dir = Path(__file__).parent.parent.parent / "tmp"
-voices_dir = tmp_dir / "piper/voices"
+voices_dir = cfg.TMP_DIR / "piper/voices"
 
 
-class PiperGeneratorOptions:
-    language: str = "en_US"
-    num_samples: int = 1000
-    length_scale: tuple[float, float] = (0.6, 1.7)
-    noise_scale: tuple[float, float] = (0.5, 1.5)
-    noise_w_scale: tuple[float, float] = (0.5, 1.5)
-    disallow_list: list[str] = []
+class PiperConfig(SourceConfig):
+    language: str
+    positive_samples: int
+    negative_samples: int
+    weight: float
+    length_scale: tuple[float, float]
+    noise_scale: tuple[float, float]
+    noise_w_scale: tuple[float, float]
+    model_weights: dict[str, float]
 
+
+def validate_scale(value) -> tuple[float, float]:
+    if isinstance(value, float) or isinstance(value, int):
+        return (float(value), float(value))
+    value = tuple(float(x) for x in value)
+    return (value[0], value[1]) if len(value) == 2 else (value[0], value[0])
+
+
+def validate_config(source: PiperConfig) -> PiperConfig:
+    source.length_scale = validate_scale(source.length_scale)
+    source.noise_scale = validate_scale(source.noise_scale)
+    source.noise_w_scale = validate_scale(source.noise_w_scale)
+    if not hasattr(source, 'model_weights'):
+        source.model_weights = {}
+    return source
 
 def download_voices(language: str, disallow_list: list[str]) -> list[str]:
     voices_dir.mkdir(parents=True, exist_ok=True)
@@ -85,25 +109,40 @@ def _pcm_to_float32(raw_bytes: bytes, sampwidth: int) -> np.ndarray:
     raise ValueError(f"Unsupported WAV sample width: {sampwidth}")
 
 
-def generate(phase: str, options: PiperGeneratorOptions):
-    voice_paths = download_voices(options.language, options.disallow_list)
+def generate(piper_config: PiperConfig):
+    disallow_list = [x[0] for x in piper_config.model_weights.items() if x[1] <= 0.0]
+    voice_paths = download_voices(piper_config.language, disallow_list)
     voice_count = len(voice_paths)
 
-    if voice_count == 0:
-        raise RuntimeError(f"No voices available for language prefix: {options.language}")
+    positive_dir = cfg.SOURCE_DIR / piper_config.dir / 'positive'
+    negative_dir = cfg.SOURCE_DIR / piper_config.dir / 'negative'
 
-    base_count = options.num_samples // voice_count
-    extra = options.num_samples % voice_count
+    if voice_count == 0:
+        raise RuntimeError(f"No voices available for language prefix: {piper_config.language}")
+    
+    all_phrases = generate_simple_phrase_set(piper_config.positive_samples, piper_config.negative_samples)
+
+    base_count = len(all_phrases) // voice_count
+    extra = len(all_phrases) % voice_count
     per_voice_counts = [base_count + (1 if i < extra else 0) for i in range(voice_count)]
 
-    rng = random.Random()
+    rng = random.Random(42)
+
+    progress = tqdm(total=len(all_phrases), desc=piper_config.dir)
 
     for voice_index, voice_path in enumerate(voice_paths):
         voice = PiperVoice.load(voice_path)
+        weight = piper_config.weight
+        for model_name, model_weight in piper_config.model_weights.items():
+            if Path(voice_path).stem.find(model_name) >= 0:
+                weight = model_weight
+                break
         for _ in range(per_voice_counts[voice_index]):
-            length_scale = rng.uniform(*options.length_scale)
-            noise_scale = rng.uniform(*options.noise_scale)
-            noise_w_scale = rng.uniform(*options.noise_w_scale)
+            phrase, is_positive, sample_index = all_phrases.pop()
+            progress.update()
+            length_scale = rng.uniform(*piper_config.length_scale)
+            noise_scale = rng.uniform(*piper_config.noise_scale)
+            noise_w_scale = rng.uniform(*piper_config.noise_w_scale)
 
             wav_buffer = io.BytesIO()
             syn_config = SynthesisConfig(
@@ -112,7 +151,7 @@ def generate(phase: str, options: PiperGeneratorOptions):
                 noise_w_scale=noise_w_scale,
             )
             with wave.open(wav_buffer, "wb") as wav_file:
-                voice.synthesize_wav(phase, wav_file, syn_config=syn_config)
+                voice.synthesize_wav(phrase, wav_file, syn_config=syn_config)
 
             with wave.open(io.BytesIO(wav_buffer.getvalue()), "rb") as wav_file:
                 sample_rate = wav_file.getframerate()
@@ -122,25 +161,21 @@ def generate(phase: str, options: PiperGeneratorOptions):
 
             data = _pcm_to_float32(raw_bytes, sample_width)
             data = np.clip(data, -1.0, 1.0).astype(np.float32, copy=False)
-            yield sample_rate, data
-
-
-def _test() -> None:
-    from time import sleep
-    import sounddevice as sd
-
-    phase = "Witaj świecie!"
-    options = PiperGeneratorOptions()
-    options.language = "pl"
-    options.num_samples = 10
-    options.disallow_list = ['mls_6892']
-
-    for index, (sample_rate, data) in enumerate(generate(phase, options), start=1):
-        print(f"Sample {index}: rate={sample_rate}, shape={data.shape}, dtype={data.dtype}")
-        sd.play(data, sample_rate)
-        sd.wait()
-        sleep(0.4)
+            output_name = ('positive' if is_positive else 'negative') + f"/{sample_index // 100:03d}/{sample_index:05d}-{Path(voice_path).stem}"
+            write_sample(piper_config, sample_rate, data, output_name, [{
+                "start": 0.0,
+                "end": len(data) / sample_rate,
+                "phrase": phrase,
+                "weight": weight,
+            }])
 
 
 if __name__ == "__main__":
-    _test()
+    if len(sys.argv) < 2:
+        for index, source in enumerate(config.sources):
+            if source.type == 'piper':
+                break
+    else:
+        index = int(sys.argv[1])        
+    generate(config.sources[index])
+

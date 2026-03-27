@@ -1,11 +1,50 @@
-import math
+from pathlib import Path
+import sys
+from types import SimpleNamespace
+import yaml
+
+DATA_DIR = Path(__file__).parent.parent / "data"
+SOURCE_DIR = DATA_DIR / "src"
+TMP_DIR = DATA_DIR / "tmp"
+
+class SourceConfig(SimpleNamespace):
+    type: str
+    dir: Path
+
+class Config(SimpleNamespace):
+    phrases: list[list[str]]
+    phrase_length_min: float
+    phrase_length_max: float
+    negative_phrases: list[str]
+    sources: list[SourceConfig]
+
+def read_config() -> Config:
+    yaml_path = DATA_DIR / "config.yaml"
+    if not yaml_path.exists():
+        print(f"Config file not found at {yaml_path.resolve()}.", file=sys.stderr)
+        print(f"See 'config-sample.yaml' for an example configuration.", file=sys.stderr)
+        yaml_path = DATA_DIR / "config-sample.yaml"
+        #exit(1)
+    # Load config
+    with yaml_path.open() as f:
+        data = yaml.safe_load(f)
+    # Make phrases always a list of lists of strings
+    if isinstance(data['phrases'], str):
+        data['phrases'] = [[data['phrases']]]
+    elif isinstance(data['phrases'], list) and isinstance(data['phrases'][0], str):
+        data['phrases'] = [data['phrases']]
+    # Convert sources to SourceConfig objects
+    data['sources'] = [SourceConfig(**source) for source in data.get('sources', [])]
+    return Config(**data)
+
+config = read_config()
 
 ########## Commonly changed configuration options ##########
 
 # Maximum wake up word length (how long the word can be spoken if it is spoken slowly)
-MAX_WORD_LENGTH_MS = 1200
+MAX_WORD_LENGTH_MS = int(round(config.phrase_length_max * 1000))
 # Minimum wake up word length (how long the word can be spoken if it is spoken very fast)
-MIN_WORD_LENGTH_MS = 500
+MIN_WORD_LENGTH_MS = int(round(config.phrase_length_min * 1000))
 # Prefix process length (in fraction of embedding model window length - 775 ms)
 PREFIX_PROCESS_LENGTH_FRACTION = 0.5
 # Suffix process length (in fraction of embedding model window length - 775 ms)
@@ -66,6 +105,8 @@ TOTAL_AUDIO_LENGTH = EMBEDDING_MODEL_WINDOW_LENGTH + (EMBEDDING_VECTORS_COUNT - 
 
 
 def _test():
+    from pprint import pprint
+    pprint(config)
     for name, value in list(globals().items()):
         if name.startswith('__'):
             continue
