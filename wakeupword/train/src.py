@@ -64,6 +64,15 @@ def main() -> None:
 	print_summary(statuses)
 
 def write_sample(source_config: cfg.SourceConfig, sample_rate: int, data: np.ndarray, name: str, json_data):
+    max_val = np.max(np.abs(data))
+    if max_val <= 1.0:
+        pass # no need to normalize
+    elif max_val <= 256.0:
+        data = data / 256.0
+    elif max_val <= 65536.0:
+        data = data / 65536.0
+    else:
+        data = data / max_val
     output_dir = cfg.SOURCE_DIR / source_config.dir
     output_path = output_dir / f"{name}.wav"
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -72,10 +81,14 @@ def write_sample(source_config: cfg.SourceConfig, sample_rate: int, data: np.nda
     with open(output_path.with_suffix(".json"), "w") as f:
         json.dump(json_data, f, indent=4)
 
-def generate_simple_phrase_set(positive_samples: int, negative_samples: int) -> list[tuple[str, bool, int]]:
+def generate_simple_phrase_set(positive_samples: int | None, negative_samples: int | None) -> list[tuple[str, bool, int]]:
     positive_phrases = [phrase for group in config.phrases for phrase in group]
+    if positive_samples is None:
+        positive_samples = len(positive_phrases)
     positive_phrases = positive_phrases * (1 + positive_samples // len(positive_phrases))
     positive_phrases = positive_phrases[:positive_samples]
+    if negative_samples is None:
+        negative_samples = len(config.negative_phrases)
     negative_phrases = config.negative_phrases * (1 + negative_samples // len(config.negative_phrases))
     negative_phrases = negative_phrases[:negative_samples]
     all_phrases = list(zip(

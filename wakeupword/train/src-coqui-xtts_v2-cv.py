@@ -159,15 +159,6 @@ def generate(tts_config: CoquiTTSCVConfig):
         speaker_index = (speaker_index + 1) % len(speakers_files)
         wav = tts.tts(text=phrase, speaker_wav=str(speaker_file), language=tts_config.language)
         wav = np.array(wav, dtype=np.float32)
-        max_val = np.max(np.abs(wav))
-        if max_val <= 1.0:
-            pass # no need to normalize
-        elif max_val <= 256.0:
-            wav = wav / 256.0
-        elif max_val <= 65536.0:
-            wav = wav / 65536.0
-        else:
-            wav = wav / max_val
         output_name = ('positive' if is_positive else 'negative') + f"/{sample_index // 100:03d}/{sample_index:05d}-{speaker_index}"
         write_sample(tts_config, sample_rate, wav, output_name, [{
             "start": 0.0,

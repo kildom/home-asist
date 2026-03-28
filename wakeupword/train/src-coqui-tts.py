@@ -22,57 +22,92 @@ from src import generate_simple_phrase_set
 class CoquiTTSConfig(SourceConfig):
     model: str
     language: str
-    positive_samples: int # TODO: We are generating too much positive samples (a lot of them will repeat)
-                          # we should generate positive sample for each phrase and for each speaker, no need to provide count here
-    negative_samples: int # TODO: Negative samples should work the same way, except optional field
-                          # max_negative_samples_per_speaker may be used to limit number of negative samples
-                          # The tool should output counts for user to verify
+    max_negative_samples_per_speaker: int
     weight: float # Since we have different number of sample, we may want to do positive_weight and negative_weight
-    speaker_weights: dict[str, float] | None
+    positive_weight: float
+    negative_weight: float
+    speaker_weights: dict[str, float]
+
+
+def adjust_optional(obj, name, default):
+    if not hasattr(obj, name):
+        setattr(obj, name, default)
+
+def adjust_config(tts_config: CoquiTTSConfig):
+    adjust_optional(tts_config, 'model', 'tts_models/multilingual/multi-dataset/xtts_v2')
+    adjust_optional(tts_config, 'language', 'en')
+    adjust_optional(tts_config, 'max_negative_samples_per_speaker', 0x7FFFFFFF)
+    adjust_optional(tts_config, 'weight', 1.0)
+    adjust_optional(tts_config, 'positive_weight', tts_config.weight)
+    adjust_optional(tts_config, 'negative_weight', tts_config.weight)
+    adjust_optional(tts_config, 'speaker_weights', {})
 
 
 def generate(tts_config: CoquiTTSConfig):
+    adjust_config(tts_config)
     device = "cuda" if torch.cuda.is_available() else "cpu"
     tts = TTS(tts_config.model).to(device)
 
     print("Speakers and their weights:")
-    speaker_weights = tts_config.speaker_weights or {}
-    speakers = [
-        (s, speaker_weights.get(s, tts_config.weight))
-        for s in tts.speakers
-    ]
-    for speaker, weight in speakers:
-        print(f"  {speaker}: {weight}")
+    speaker_weights = tts_config.speaker_weights
+    negative_weight_coefficient = tts_config.negative_weight / tts_config.positive_weight
+    if tts.speakers is not None:
+        speakers = [
+            (s, speaker_weights.get(s, tts_config.weight))
+            for s in tts.speakers
+        ]
+    else:
+        speakers = [("default", 1.0)]
+    for speaker_name, weight in speakers:
+        print(f"  {speaker_name}: positive: {weight}, negative: {weight * negative_weight_coefficient}")
     speakers = [p for p in speakers if p[1] > 0.0]
     
     sample_rate = tts.synthesizer.output_sample_rate
-    speaker_index = 0
-    
-    all_phrases = generate_simple_phrase_set(tts_config.positive_samples, tts_config.negative_samples)
 
-    for phrase, is_positive, sample_index in tqdm(all_phrases, desc=tts_config.dir):
-        speaker_name, weight = speakers[speaker_index]
-        speaker_index = (speaker_index + 1) % len(speakers)
-        wav = tts.tts(text=phrase, language=tts_config.language, speaker=speaker_name)
-        wav = np.array(wav, dtype=np.float32)
-        max_val = np.max(np.abs(wav))
-        if max_val <= 1.0:
-            pass # no need to normalize
-        elif max_val <= 256.0:
-            wav = wav / 256.0
-        elif max_val <= 65536.0:
-            wav = wav / 65536.0
-        else:
-            wav = wav / max_val
-        output_name = (('positive' if is_positive else 'negative')
-            + f"/{sample_index // 100:03d}/{sample_index:05d}-{speaker_name.replace(' ', '-')}")
-        write_sample(tts_config, sample_rate, wav, output_name, [{
-            "start": 0.0,
-            "end": len(wav) / sample_rate,
-            "phrase": phrase,
-            "weight": weight,
-        }])
+    negative_samples_per_speaker = min(tts_config.max_negative_samples_per_speaker, len(config.negative_phrases))
+    positive_phrases = [phrase for group in config.phrases for phrase in group]
 
+    print(f"Generating {len(positive_phrases)} positive phrases with {len(speakers)} speakers totalling {len(positive_phrases) * len(speakers)} samples.")
+    print(f"Generating {negative_samples_per_speaker} negative phrases with {len(speakers)} speakers totalling {negative_samples_per_speaker * len(speakers)} samples.")
+
+    sample_index = 0
+    progress = tqdm(total=len(positive_phrases) * len(speakers) + negative_samples_per_speaker * len(speakers), desc=tts_config.dir)
+    for speaker_name, weight in speakers:
+        for phrase in positive_phrases:
+            for _ in range(2): # Workaround: some models add some trash at the end of sample, so retry generation
+                wav = tts.tts(text=phrase, language=tts_config.language if tts.is_multi_lingual else None, speaker=speaker_name if tts.is_multi_speaker else None)
+                wav = np.array(wav, dtype=np.float32)
+                if len(wav) / sample_rate > 2 * config.phrase_length_max:
+                    continue
+                output_name = f"positive/{sample_index // 100:03d}/{sample_index:05d}-{speaker_name.replace(' ', '-')}"
+                sample_index += 1
+                write_sample(tts_config, sample_rate, wav, output_name, [{
+                    "start": 0.0,
+                    "end": len(wav) / sample_rate,
+                    "phrase": phrase,
+                    "weight": weight,
+                }])
+                break
+            progress.update()
+
+    sample_index = 0
+    for speaker_name, weight in speakers:
+        negative_phrases = config.negative_phrases
+        if len(negative_phrases) != negative_samples_per_speaker:
+            random.shuffle(negative_phrases)
+            negative_phrases = negative_phrases[:negative_samples_per_speaker]
+        for phrase in negative_phrases:
+            wav = tts.tts(text=phrase, language=tts_config.language if tts.is_multi_lingual else None, speaker=speaker_name if tts.is_multi_speaker else None)
+            wav = np.array(wav, dtype=np.float32)
+            output_name = f"negative/{sample_index // 100:03d}/{sample_index:05d}-{speaker_name.replace(' ', '-')}"
+            sample_index += 1
+            write_sample(tts_config, sample_rate, wav, output_name, [{
+                "start": 0.0,
+                "end": len(wav) / sample_rate,
+                "phrase": phrase,
+                "weight": weight * negative_weight_coefficient,
+            }])
+            progress.update()
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

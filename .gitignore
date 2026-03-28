@@ -12,3 +12,4 @@ node_modules
 *.sch.ts
 .venv
 /tools/
+/wakeupword/models/embedding_model.json

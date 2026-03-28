@@ -51,12 +51,18 @@ def download_voices(language: str, disallow_list: list[str]) -> list[str]:
     voices_dir.mkdir(parents=True, exist_ok=True)
 
     list_result = subprocess.run(
-        ["python3", "-m", "piper.download_voices"],
+        [sys.executable, "-m", "piper.download_voices"],
         cwd=voices_dir,
         capture_output=True,
         text=True,
-        check=True,
+        check=False,
     )
+
+    if list_result.returncode != 0:
+        print(list_result.stdout)
+        print(list_result.stderr, file=sys.stderr)
+
+    list_result.check_returncode()
 
     pattern = re.compile(rf"\b{re.escape(language)}[-_][A-Za-z0-9_.-]*\b")
     parsed_voices: set[str] = set()
@@ -81,7 +87,7 @@ def download_voices(language: str, disallow_list: list[str]) -> list[str]:
 
         if not (onnx_path.exists() and json_path.exists()):
             subprocess.run(
-                ["python3", "-m", "piper.download_voices", voice_name],
+                [sys.executable, "-m", "piper.download_voices", voice_name],
                 cwd=voices_dir,
                 check=True,
             )

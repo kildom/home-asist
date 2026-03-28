@@ -2,8 +2,8 @@
 phrases:
   - ["Hej Dona tu", "Hej Dona, tu"]
 
-phrase_length_min: 0.5
-phrase_length_max: 1.2
+phrase_length_min: 0.7
+phrase_length_max: 1.76
 
 negative_phrases:
   - Klej Dona tu
@@ -48,19 +48,15 @@ sources:
     dir: coqui-xtts-ml
     model: tts_models/multilingual/multi-dataset/xtts_v2
     language: "pl"
-    positive_samples: 500
-    negative_samples: 500
     weight: 1.0
-    speaker_weights: 
-      'Tammie Ema': 0 # TODO: check which speakers cause issues and disallow them
+    negative_weight: 0.5
 
   - type: coqui-tts
     dir: coqui-xtts-pl
     model: tts_models/pl/mai_female/vits
     language: "pl"
-    positive_samples: 500
-    negative_samples: 500
     weight: 1.0
+    negative_weight: 0.5
 
   - type: real
     dir: real
