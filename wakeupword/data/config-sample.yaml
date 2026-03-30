@@ -30,33 +30,33 @@ sources:
     model_weights:
       mls_6892: 0 # disallowed mls_6892
 
-  - type: coqui-xtts_v2-cv
-    dir: coqui-xtts_v2-cv
+  - type: coqui-tts
+    dir: coqui-tts-cv
+    model: tts_models/multilingual/multi-dataset/xtts_v2
     language: "pl"
-    positive_samples: 1000
-    negative_samples: 1000
-    speakers: 500
-    weight: 1.0
+    common_voice_speakers: 500
+    negative_samples_per_speaker: 4
+    negative_weight_coefficient: 0.5
 
   - type: real
-    dir: coqui-xtts-speakers
-    source: tmp/coqui-xtts_v2-cv/speakers
+    dir: coqui-tts-cv-speakers
+    source: tmp/coqui-tts-cv/speakers
     mode: transcribed
     weight: 0.8
 
   - type: coqui-tts
-    dir: coqui-xtts-ml
+    dir: coqui-xtts
     model: tts_models/multilingual/multi-dataset/xtts_v2
     language: "pl"
-    weight: 1.0
-    negative_weight: 0.5
+    negative_samples_per_speaker: 4
+    negative_weight_coefficient: 0.5
 
   - type: coqui-tts
-    dir: coqui-xtts-pl
+    dir: coqui-tts-pl
     model: tts_models/pl/mai_female/vits
     language: "pl"
-    weight: 1.0
-    negative_weight: 0.5
+    negative_samples_per_speaker: 4
+    negative_weight_coefficient: 0.5
 
   - type: real
     dir: real
